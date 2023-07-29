@@ -1,10 +1,10 @@
 import { Match, Card, Undo } from '../types';
 
-export interface TraitorInt {
+export interface TraitorInt extends Card {
 
 }
 
-export class TraitorImpl implements TraitorInt, Card {
+export class TraitorImpl implements TraitorInt {
     id: string = 'traitor';
     
     public trigger(match: Match): Undo {

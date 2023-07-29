@@ -1,10 +1,10 @@
 import { Match, Card, Undo } from '../types';
 
-export interface GuardInt {
+export interface GuardInt extends Card {
 
 }
 
-export class GuardImpl implements GuardInt, Card {
+export class GuardImpl implements GuardInt {
     id: string = 'guard';
     
     constructor() {

@@ -13,7 +13,7 @@ interface CardInt {
     trigger(match: Match): Undo;
 }
 
-interface ThiefInt {
+interface ThiefInt extends CardInt {
 
 }
 

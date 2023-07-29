@@ -1,10 +1,10 @@
 import { Match, Card, Undo } from '../types';
 
-export interface SneakInt {
+export interface SneakInt extends Card {
 
 }
 
-export class SneakImpl implements SneakInt, Card {
+export class SneakImpl implements SneakInt {
     id: string = 'sneak';
     
     public trigger(match: Match): Undo {

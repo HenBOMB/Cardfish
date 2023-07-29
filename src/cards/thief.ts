@@ -1,6 +1,6 @@
 import { Match, Card, Undo, Thief } from '../types';
 
-export class ThiefImpl implements Thief, Card {
+export class ThiefImpl implements Thief {
     id: string = 'thief';
     
     public trigger(match: Match): Undo {

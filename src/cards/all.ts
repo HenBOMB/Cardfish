@@ -1,4 +1,4 @@
-import guard from './guard';
+import guard, { GuardInt } from './guard';
 import door from './door';
 import sneak from './sneak';
 import { createThief } from './thief';
