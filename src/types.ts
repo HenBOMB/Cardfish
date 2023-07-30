@@ -19,8 +19,6 @@ interface MatchInt {
 interface HandInt {
     thief: Thief;
 
-    isFull: () => boolean;
-
     /**
      * Shuffles the deck randomly.
      */

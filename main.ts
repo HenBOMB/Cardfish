@@ -3,15 +3,13 @@ import { Torch, Guard, Traitor, Sneak, Door } from './src/cards/all';
 import { createThief } from './src/cards/thief';
 
 const match = createMatch();
+const thief = createThief(7);
 
-match.begin(createThief(), [
+match.begin(thief, [
     Torch(), Guard(), Guard(), 
     Guard(), Traitor(), Sneak(), 
     Torch(), Door()
 ]);
-
-// move?
-// match.thief.set()
 
 console.log(match.hand.deal());
 

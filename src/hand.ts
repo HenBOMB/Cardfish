@@ -13,10 +13,6 @@ export class HandImpl implements Hand {
         this._deck = [...deck];
     }
 
-    isFull(): boolean {
-        return this._cards.length === 9;
-    }
-
     getCard(i: number): Card {
         return this._cards[i];
     }
@@ -41,13 +37,27 @@ export class HandImpl implements Hand {
          */
 
         const count = this._cards.length;
-
-        while(!this.isFull())
+        
+        // TODO move cards
+        
+        // ? drop dowm
+        for (let i = 5; i > 0; i--)
         {
-            let c = this._deck.shift();
-            // TODO Deal more rng card, include exit card.
-            if(!c) c = Math.random() > 0.6? Guard() : Torch();
-            this._cards = [...this._cards, c];
+          const c = this._cards[i];
+          if(c.id === 'empty') continue;
+          const g = this._cards[i+3];
+          if(g.id !== 'empty') continue;
+          this._cards[i] = g;
+          this._cards[i+3] = c;
+        }
+        
+        for (let i = 0; i < 8; i++) 
+        {
+          let c = this._cards[i];
+          if(c.id !== 'empty') continue;
+          c = this._deck.shift();
+          if(!c) c = Math.random() > 0.6? Guard() : Torch();
+          this._cards = [...this._cards, c];
         }
 
         return this._cards.length - count;
