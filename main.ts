@@ -1,17 +1,16 @@
-import { createMatch } from './src/match';
-import { Torch, Guard, Traitor, Sneak, Door } from './src/cards/all';
-import { createThief } from './src/cards/thief';
+import { createHeist } from './game/heist';
+import { Torch, Guard, Traitor, Sneak, Door } from './game/cards/all';
+import { createThief } from './game/cards/thief';
 
-const match = createMatch();
+const heist = createHeist();
 const thief = createThief(7);
 
-match.begin(thief, [
+heist.begin(thief, [
     Torch(), Guard(), Guard(), 
     Guard(), Traitor(), Sneak(), 
     Torch(), Door()
 ]);
 
-console.log(match.hand.deal());
-
 // < ^ ^ > v v> ^ ^
-match.play([6, 3, 0, 1, 4, 8, 5, 2]);
+// [6, 3, 0, 1, 4, 8, 5, 2]
+// heist.play();

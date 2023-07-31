@@ -1,7 +1,8 @@
-import { Hand, Card, Thief } from './types';
-import { Torch, Guard } from './cards/all';
+import { Board, Card, Thief, Undo } from './types';
+import { Torch, Guard, Empty } from './cards/all';
 
-export class HandImpl implements Hand {
+export class BoardImpl implements Board {
+    // ? may not need this
     thief: Thief;
 
     private _cards: Card[];
@@ -9,12 +10,22 @@ export class HandImpl implements Hand {
 
     constructor(thief: Thief, deck: Card[]) {
         this.thief = thief;
-        this._cards = Array<Card>(8);
+        this._cards = Array<Card>(8).map(c=>Empty());
         this._deck = [...deck];
+
+        this._cards[thief.getStartPos()] = thief;
     }
 
     getCard(i: number): Card {
         return this._cards[i];
+    }
+
+    setCard(i: number, card: Card = Empty()): Undo {
+        const c = this._cards[i];
+        this._cards[i] = card;
+        return () => {
+            this._cards[i] = c;
+        }
     }
 
     getCards() {
@@ -51,12 +62,12 @@ export class HandImpl implements Hand {
           this._cards[i+3] = c;
         }
         
+        // ? deal the cards
         for (let i = 0; i < 8; i++) 
         {
           let c = this._cards[i];
           if(c.id !== 'empty') continue;
-          c = this._deck.shift();
-          if(!c) c = Math.random() > 0.6? Guard() : Torch();
+          c = this._deck.shift() || Math.random() > 0.6? Guard() : Torch();
           this._cards = [...this._cards, c];
         }
 
@@ -64,6 +75,6 @@ export class HandImpl implements Hand {
     }
 }
 
-export function createHand(thief: Thief, deck: Card[]): Hand {
-    return new HandImpl(thief, deck);
+export function createBoard(thief: Thief, deck: Card[]): Board {
+    return new BoardImpl(thief, deck);
 }

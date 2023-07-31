@@ -1,4 +1,4 @@
-import { Match, Card, Undo } from '../types';
+import { Board, Card, Undo } from '../../types';
 
 export interface SneakInt extends Card {
 
@@ -7,7 +7,11 @@ export interface SneakInt extends Card {
 export class SneakImpl implements SneakInt {
     id: string = 'sneak';
     
-    public trigger(match: Match): Undo {
+    is(type: string): boolean {
+        return type === 'sneak';
+    }
+
+    trigger(board: Board): Undo {
         return () => {};
     }
 }
