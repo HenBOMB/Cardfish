@@ -8,9 +8,11 @@ const heist = createHeist(7, [
     Torch(), Door()
 ]);
 
-// how to run ts script main.ts: 
-
 // < ^ ^ > v v> ^ ^
+/** ^ > ^
+ *  ^ v ^
+ *  < < >
+ */
 // [6, 3, 0, 1, 4, 8, 5, 2]
 
 const [ score, path ] = bestPath(heist.board, 8);
