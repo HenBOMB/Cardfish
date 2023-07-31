@@ -1,18 +1,18 @@
-import { Board, Heist, Stealth, Undo } from '../../types';
+import { CardImpl } from '../card';
+import { Board, Card, Undo } from '../../types';
 
-export interface HideInt extends Stealth {
+export interface HideInt extends Card {
 
 }
 
-export class HideImpl implements HideInt {
-    id: string = 'hide';
-    
-    is(type: string): boolean {
-        return type === this.id || type === 'sneak';
+export class HideImpl extends CardImpl implements HideInt {
+
+    constructor() {
+        super('hide');
     }
 
-    trigger(board: Board): Undo {
-        return () => {};
+    is(type: string): boolean {
+        return super.is(type) || type === 'hide';
     }
 }
 

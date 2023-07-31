@@ -1,18 +1,18 @@
-import { Board, Obstacle, Undo } from '../../types';
+import { CardImpl } from '../card';
+import { Board, Card, Undo } from '../../types';
 
-export interface DoorInt extends Obstacle {
+export interface DoorInt extends Card {
 
 }
 
-export class DoorImpl implements DoorInt {
-    id: string = 'door';
-    
-    is(type: string): boolean {
-        return type === this.id || type === 'obstacle';
+export class DoorImpl extends CardImpl implements DoorInt {
+
+    constructor() {
+        super('door');
     }
-    
-    trigger(board: Board): Undo {
-        return () => {};
+
+    is(type: string): boolean {
+        return super.is(type) || type === 'obstacle';
     }
 }
 

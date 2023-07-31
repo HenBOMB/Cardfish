@@ -1,18 +1,18 @@
+import { CardImpl } from '../card';
 import { Board, Stealth, Undo } from '../../types';
 
 export interface TraitorInt extends Stealth {
 
 }
 
-export class TraitorImpl implements TraitorInt {
-    id: string = 'traitor';
+export class TraitorImpl extends CardImpl implements TraitorInt {
+    
+    constructor() {
+        super('traitor');
+    }
     
     is(type: string): boolean {
-        return type === this.id || type === 'sneak';
-    }
-
-    trigger(board: Board): Undo {
-        return () => {};
+        return super.is(type) || type === 'traitor';
     }
 }
 

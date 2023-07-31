@@ -1,18 +1,18 @@
 import { Board, Equipment, Undo } from '../../types';
+import { CardImpl } from '../card';
 
 export interface ChestInt extends Equipment {
 
 }
 
-class ChestImpl implements ChestInt {
-    id: string = 'chest';
-    
-    is(type: string): boolean {
-        return type === this.id || type === 'chest';
+class ChestImpl extends CardImpl implements ChestInt {
+
+    constructor() {
+        super('chest');
     }
     
-    public trigger(board: Board): Undo {
-        return () => {};
+    is(type: string): boolean {
+        return super.is(type) || type === 'equipment';
     }
 }
 

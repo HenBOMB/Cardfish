@@ -10,9 +10,8 @@ export class BoardImpl implements Board {
 
     constructor(thief: Thief, deck: Card[]) {
         this.thief = thief;
-        this._cards = Array<Card>(8).map(c=>Empty());
+        this._cards = Array<Card>(8).fill(Empty());
         this._deck = [...deck];
-
         this._cards[thief.getStartPos()] = thief;
     }
 
@@ -21,10 +20,11 @@ export class BoardImpl implements Board {
     }
 
     setCard(i: number, card: Card = Empty()): Undo {
-        const c = this._cards[i];
-        this._cards[i] = card;
+        const board = this;
+        const c = board._cards[i];
+        board._cards[i] = card;
         return () => {
-            this._cards[i] = c;
+            board._cards[i] = c;
         }
     }
 

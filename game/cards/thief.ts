@@ -1,24 +1,16 @@
+import { CardImpl } from './card';
 import { Board, Undo, Thief } from '../types';
 
-export class ThiefImpl implements Thief {
-    id: string = 'thief';   
-    
+export class ThiefImpl extends CardImpl implements Thief {
     private i: number;
     private _stealth: number;
     private _treasures: number;
 
     constructor(i: number) {
-      this.i = i;
-      this._stealth = 10;
-      this._treasures = 0;
-    }
-
-    is(type: string): boolean {
-        return type === 'thief';
-    }
-
-    trigger(board: Board): Undo {
-        return () => {};
+        super('thief');
+        this.i = i;
+        this._stealth = 10;
+        this._treasures = 0;
     }
 
     getStealth(): number {

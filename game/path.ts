@@ -1,21 +1,38 @@
-import { Path, Board, Undo, Thief } from './types';
+import { Path, Board, Undo, Card } from './types';
+
+const MASK = [
+    [2, 5, 6, 7, 8],
+    [6, 7, 8],
+    [0, 3, 6, 7, 8],
+    [2, 5, 8],
+    [],
+    [0, 3, 6],
+    [0, 1, 2, 5, 8],
+    [0, 1, 2],
+    [0, 1, 2, 3, 6]
+];
 
 class PathImpl implements Path {
     private initStealth: number;
+    private board: Board;
+    private diffMask: number[];
 
     private _diff: number;
     private _path: number[];
     private _end: boolean;
 
     constructor(board: Board) {
+        this.board = board;
         this.initStealth = board.thief.getStealth();
+        this.diffMask = MASK[board.thief.getStartPos()];
         this._diff = 1;
         this._path = [];
         this._end = false;
     }
 
+    // TODO Add isCaught in return
     isEnd(): boolean {
-        return this._end;
+        return this._end || this._path.length === 8;
     }
 
     getDiff(): number {
@@ -26,33 +43,43 @@ class PathImpl implements Path {
         return this._path;
     }
 
+    getLast(board: Board): Card | null {
+        const i = this._path.slice(-1)[0];
+        if(!i) return null;
+        return board.getCard(i);
+    }
+
     getInitStealth(): number {
         return this.initStealth;
     }
 
-    grab(board: Board, i: number): Undo | false {
-        if(this.isEnd()) {
-            return false;
-        }
+    select(board: Board, i: number): Undo | false {
+        const c = board.getCard(i);
+        if(this.isEnd()) return false;
+        if(this._path.some(j => j === i)) return false;
 
         const p = this;
-        const c = board.getCard(i);
-
+        const d = p._diff;
+        
         p._path.push(i);
-        const t = c.trigger(board)
-        const s = board.setCard(i);
+        const u = c.select(board);
+
+        if(this.diffMask.some(j => j === i)) {
+            p._diff++;
+        }
 
         return () => {
             p._path.pop();
-            t();
-            s();
+            u();
+            p._diff = d;
         };
     }
 
     end(): Undo {
-        this._end = true;
+        const path = this;
+        path._end = true;
         return () => {
-            this._end = false;
+            path._end = false;
         };
     }
 }

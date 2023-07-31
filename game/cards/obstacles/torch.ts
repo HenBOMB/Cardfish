@@ -1,18 +1,18 @@
-import { Board, Obstacle, Undo } from '../../types';
+import { CardImpl } from '../card';
+import { Board, Card, Undo } from '../../types';
 
-export interface TorchInt extends Obstacle {
+export interface TorchInt extends Card {
 
 }
 
-export class TorchImpl implements TorchInt {
-    id: string = 'torch';
-    
-    is(type: string): boolean {
-        return type === this.id || type === 'obstacle';
+export class TorchImpl extends CardImpl implements TorchInt {
+
+    constructor() {
+        super('torch');
     }
 
-    trigger(board: Board): Undo {
-        return () => {};
+    is(type: string): boolean {
+        return super.is(type) || type === 'obstacle';
     }
 }
 

@@ -1,17 +1,20 @@
+import { CardImpl } from './card';
 import { Board, Card, Undo } from '../types';
 
 export interface EmptyInt extends Card {
 
 }
 
-export class EmptyImpl implements EmptyInt {
-    id: string = 'empty';
-    
+export class EmptyImpl extends CardImpl implements EmptyInt {
+    constructor() {
+        super('empty');
+    }
+
     is(type: string): boolean {
         return type === 'empty';
     }
 
-    trigger(board: Board): Undo {
+    select(board: Board): Undo {
         return () => {};
     }
 }

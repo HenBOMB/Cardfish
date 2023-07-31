@@ -1,46 +1,55 @@
-import { Path, Board } from "../game/types";
+import { Path, Board, Undo } from "../game/types";
 import evaluate from "./evaluator";
 import createPath from "../game/path";
 import generateMoves from "./generator";
 
-function dfsWithBacktracking(board: Board, depth: number, _path: Path | null = null): [number, Path] {
-    _path = _path || createPath(board);
+export var count = 0;
 
-    if (depth === 0) {
-        return [evaluate(board, _path), _path];
+function dfsWithBacktracking(board: Board, depth: number, path: Path | null = null): [number, number[]] {
+    path = path || createPath(board);
+    const generated = generateMoves(board, path);
+
+    if (depth === 0 || path.isEnd() || !generated.length) {
+        return [evaluate(board, path), path.getPath()];
     }
     
     let _score = Number.NEGATIVE_INFINITY;
-    
-    const generated = generateMoves(board);
+    let _path: number[] = [];
 
     for (let i = 0; i < generated.length; i++) {
         const j = generated[i];
-        let end: Undo  = false;
+        let u: Undo | false  = false;
 
-        if(i === -1)
+        if(j === -1)
         {
-            end = _path.end();
+            u = path.end();
         }
+        else {
+            u = path.select(board, j);
+        } 
 
-        const u = _path.grab(board, j);
-        
         if(!u) continue;
 
-        const [score, path] = dfsWithBacktracking(board, depth - 1, _path);
+        count++;
+
+        const [score, path_] = dfsWithBacktracking(board, depth - 1, path);
         
         u();
-        end && end();
         
+        if(score === 999) {
+            return [score, [...path_]];
+        }
+
         if (score > _score) {
             _score = score;
-            //_path = path;
+            _path = [...path_];
         }
     }
     
     return [_score, _path];
 }
 
-export default function bestPath(board: Board, maxDepth: number): [number, Path] {
+export default function bestPath(board: Board, maxDepth: number): [number, number[]] {
+    count = 0;
     return dfsWithBacktracking(board, maxDepth);
 }

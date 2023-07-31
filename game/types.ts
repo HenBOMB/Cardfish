@@ -4,8 +4,6 @@ export interface Heist {
     thief: Thief;
     board: Board;
     
-    begin: (thief: Thief, deck: Card[]) => void;
-
     /**
      * Plays a specified path of actions.
      * @param path - An array of numbers representing the sequence of actions to be played.
@@ -16,8 +14,6 @@ export interface Heist {
      * Undoes the last action performed.
      */
     undo: () => void;
-
-    grab: (i: number) => [Undo, Card];
 }
 
 export interface Board {
@@ -67,16 +63,19 @@ export interface Path {
     isEnd(): boolean;
     getDiff: () => number;
     getPath: () => number[];
-    grab: (board: Board, i: number) => Undo | false;
+    getLast: (board: Board) => Card | null;
+    getInitStealth: () => number;
+    select: (board: Board, i: number) => Undo | false;
 }
 
 // ? CARD TYPES
 
 export interface Card {
     id: string;
-
     is(type: string): boolean;
-    trigger(board: Board): Undo;
+    isLit(board: Board): boolean;
+    select(board: Board): Undo;
+    getValue(path: Path): number;
 }
 
 export interface Thief extends Card {

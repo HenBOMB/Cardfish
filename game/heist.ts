@@ -1,4 +1,5 @@
 import { createBoard } from './board';
+import { createThief } from './cards/thief';
 import { Heist, Card, Undo, Thief, Board, Path } from './types';
 
 class HeistImpl implements Heist {
@@ -7,12 +8,9 @@ class HeistImpl implements Heist {
     
     private _undos: (() => void)[];
     
-    constructor() {
+    constructor(i: number, deck: Card[]) {
         this._undos = [];
-    }
-
-    begin(thief: Thief, deck: Card[]): void {
-        this.thief = thief;
+        this.thief = createThief(i);
         this.board = createBoard(this.thief, deck);
         this.board.deal();
     }
@@ -25,6 +23,8 @@ class HeistImpl implements Heist {
      * All card values are multiplied with the current path diff.
      * stealth > 0 = invisible
      */
+
+    // TODO
 
     /** SNEAK
      * Gets multiplied if it can increase.
@@ -102,6 +102,6 @@ class HeistImpl implements Heist {
 }
 
 
-export function createHeist(): Heist {
-    return new HeistImpl();
+export function createHeist(i: number, deck: Card[]): Heist {
+    return new HeistImpl(i, deck);
 }

@@ -1,18 +1,18 @@
-import { Board, Treasure, Undo } from '../../types';
+import { CardImpl } from '../card';
+import { Board, Card, Undo } from '../../types';
 
-export interface PouchInt extends Treasure {
+export interface PouchInt extends Card {
 
 }
 
-export class PouchImpl implements PouchInt {
-    id: string = 'pouch';
-    
-    is(type: string): boolean {
-        return type === 'pouch' || type === 'treasure';
+export class PouchImpl extends CardImpl implements PouchInt {
+
+    constructor() {
+        super('pouch');
     }
 
-    trigger(board: Board): Undo {
-        return () => {};
+    is(type: string): boolean {
+        return super.is(type) || type === 'treasure';
     }
 }
 

@@ -1,11 +1,17 @@
 import { Board, Path } from "../game/types";
 
 const WEIGHTS: number[] = [
-    10,
-    1,
+    10.0,
+    1.0,
+    0.2,
 ];
 
 export default function evaluate(board: Board, path: Path, weights: number[] = WEIGHTS): number {
+
+    if(board.thief.getStealth() < 0 && path.getLast(board)?.isLit(board)) {
+        return -999;
+    }
+
     const [ SxAa, SxAb, SxAc, SxAd, SxAe, SxAf ] = weights;
     const path_ = path.getPath();
 
@@ -16,7 +22,7 @@ export default function evaluate(board: Board, path: Path, weights: number[] = W
     _score += path_.filter(i => board.getCard(i).is('treasure')).length * SxAb;
 
     if(path.isEnd()) { 
-        _score += SxAc;
+        _score += (board.thief.getStealth() - path.getInitStealth()) * SxAc;
     }
 
     // ? This leads to higher path difficulty. More costly?
@@ -24,5 +30,5 @@ export default function evaluate(board: Board, path: Path, weights: number[] = W
 
     // TODO ? penalize for ending on bad square
 
-    return 0;
+    return _score;
 }
