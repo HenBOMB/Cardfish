@@ -1,16 +1,14 @@
 import { Path, Board, Undo } from "../game/types";
 import evaluate from "./evaluator";
-import createPath from "../game/path";
 import generateMoves from "./generator";
 
 export var count = 0;
 
-function dfsWithBacktracking(board: Board, depth: number, path: Path | null = null): [number, number[]] {
-    path = path || createPath(board);
-    const generated = generateMoves(board, path);
+function dfsWithBacktracking(board: Board, depth: number): [number, number[]] {
+    const generated = generateMoves(board);
 
-    if (depth === 0 || path.isEnd() || !generated.length) {
-        return [evaluate(board, path), path.getPath()];
+    if (depth === 0 || board.path.isEnd() || !generated.length) {
+        return [evaluate(board, board.path), board.path.getPath()];
     }
     
     let _score = Number.NEGATIVE_INFINITY;
@@ -22,17 +20,17 @@ function dfsWithBacktracking(board: Board, depth: number, path: Path | null = nu
 
         if(j === -1)
         {
-            u = path.end();
+            u = board.path.end();
         }
         else {
-            u = path.select(board, j);
+            u = board.path.select(board, j);
         } 
 
         if(!u) continue;
 
         count++;
 
-        const [score, path_] = dfsWithBacktracking(board, depth - 1, path);
+        const [score, path_] = dfsWithBacktracking(board, depth - 1);
         
         u();
         

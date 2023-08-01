@@ -1,24 +1,12 @@
 import { CardImpl } from './card';
 import { Board, Undo, Card } from '../types';
 
-export interface ExitInt extends Card {
-
-}
-
-export class ExitImpl extends CardImpl implements ExitInt {
+export class ExitImpl extends CardImpl implements Card {
     constructor() {
         super('exit');
     }
-
-    is(type: string): boolean {
-        return type === 'exit';
-    }
-
-    trigger(board: Board): Undo {
-        return () => {};
-    }
 }
 
-export default function Exit(): ExitInt {
+export default function Exit(): Card {
     return new ExitImpl();
 }

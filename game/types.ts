@@ -19,6 +19,8 @@ export interface Heist {
 export interface Board {
     thief: Thief;
 
+    path: Path;
+
     /**
      * Shuffles the deck randomly.
      */
@@ -26,9 +28,8 @@ export interface Board {
 
     /**
      * Deals as many cards as possible and returns the number of cards dealt.
-     * @returns The number of cards dealt.
      */
-    deal: () => number;
+    deal: () => void;
 
     /**
      * Retrieves a card from the current hand using its index.
@@ -56,6 +57,12 @@ export interface Board {
      * @returns An array containing all the cards in the current deck.
      */
     getDeck: () => Card[];
+
+    getGuards: (exclude?: number) => Guard[];
+
+    getAdj: (card: Card) => Card[];
+
+    getPerp: (card: Card) => Card[];
 }
 
 export interface Path {
@@ -63,7 +70,7 @@ export interface Path {
     isEnd(): boolean;
     getDiff: () => number;
     getPath: () => number[];
-    getLast: (board: Board) => Card | null;
+    getLast: (board: Board) => Card;
     getInitStealth: () => number;
     select: (board: Board, i: number) => Undo | false;
 }
@@ -71,21 +78,32 @@ export interface Path {
 // ? CARD TYPES
 
 export interface Card {
+    getValue(board: Board): number;
     id: string;
-    is(type: string): boolean;
+    index: number;
+
+    is(type: Card | string): boolean;
     isLit(board: Board): boolean;
+    isWatched(board: Board): boolean;
+    isSelected(): boolean;
     select(board: Board): Undo;
-    getValue(path: Path): number;
+    getModifier(key: string): number;
+    setModifier(key: string, value: number): Undo;
 }
 
 export interface Thief extends Card {
+    isCaught(): boolean;
+    setCaught(): Undo;
     getStealth(): number;
+    setStealth(stealth: number): Undo;
     getTreasures(): number;
+    setTreasures(treasures: number): Undo;
     getStartPos: () => number;
 }
 
 export interface Guard extends Card {
-
+    setLook(card: Card): Undo;
+    getFacing(board: Board): Card | null;
 }
 
 export interface Equipment extends Card {

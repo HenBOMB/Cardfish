@@ -13,6 +13,7 @@ class HeistImpl implements Heist {
         this.thief = createThief(i);
         this.board = createBoard(this.thief, deck);
         this.board.deal();
+        this.thief.select(this.board);
     }
 
     // ? Getting rid of card costs stealth points.
@@ -47,8 +48,8 @@ class HeistImpl implements Heist {
      * A guard's facing direction is indicated by the view cone icon on its border.
      * The opposite side of a guards facing direction is it's backside.
      * If you approach a guard in the shadow from his backside, you don't have to spend any stealth points. Gives you treasure instead.
-     * Cards that are watched by a guad have an eye icon on their bottom.
-     * If you select a card that was watched by a guard, the guard is alerted (!) and gets +! permanently.
+     * Cards that are watched by a guard have an eye icon on their bottom.
+     * If you select a card that was watched by a guard, the guard is alerted (!) and gets +1 permanently.
      * Selecting an illuminated adjacent card makes a guard suspicious (?) and turns him into that card's direction.
      * If a guard's value is higher than your remaining stealth points, he will capture you.
      * When you deselect cards, guards will restore their initial state.

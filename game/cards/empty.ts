@@ -1,24 +1,12 @@
 import { CardImpl } from './card';
 import { Board, Card, Undo } from '../types';
 
-export interface EmptyInt extends Card {
-
-}
-
-export class EmptyImpl extends CardImpl implements EmptyInt {
+export class EmptyImpl extends CardImpl implements Card {
     constructor() {
         super('empty');
     }
-
-    is(type: string): boolean {
-        return type === 'empty';
-    }
-
-    select(board: Board): Undo {
-        return () => {};
-    }
 }
 
-export default function Empty(): EmptyInt {
+export default function Empty(): Card {
     return new EmptyImpl();
 }

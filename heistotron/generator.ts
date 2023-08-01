@@ -12,13 +12,7 @@ const MAP = [
     [4, 5, 7],
 ];
 
-export default function generate(board: Board, path: Path): number[] {
-    const i = 
-        path.getPath().slice(-1)[0] || 
-        board.getCards().findIndex((card: Card) => card.is('thief'));
-    
-    // TODO maybe filter out bad moves?
-
-    // ? -1 is end path
-    return [...MAP[i]].filter(i => !path.getPath().some(j => j === i));
+export default function generate(board: Board): number[] {
+    const i = board.path.getPath().slice(-1)[0]
+    return [...MAP[i]].filter(i => !board.getCard(i).isSelected());
 }

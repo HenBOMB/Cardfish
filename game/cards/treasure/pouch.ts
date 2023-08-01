@@ -14,6 +14,22 @@ export class PouchImpl extends CardImpl implements PouchInt {
     is(type: string): boolean {
         return super.is(type) || type === 'treasure';
     }
+
+    getValue(board: Board): number {
+        return (1 +
+            (this.isLit(board)? 1 : 0) + 
+            (this.isWatched(board)? 1 : 0)
+        ) * board.path.getDiff();
+    }
+
+    select(board: Board): Undo {
+        const u = super.select(board);
+        const uu = board.thief.setTreasures(board.thief.getTreasures() + this.getValue(board));
+        return () => {
+            u();
+            uu();
+        }
+    }
 }
 
 export default function Pouch(): PouchInt {

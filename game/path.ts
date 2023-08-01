@@ -1,4 +1,4 @@
-import { Path, Board, Undo, Card } from './types';
+import { Path, Board, Undo, Card, Guard } from './types';
 
 const MASK = [
     [2, 5, 6, 7, 8],
@@ -26,13 +26,14 @@ class PathImpl implements Path {
         this.initStealth = board.thief.getStealth();
         this.diffMask = MASK[board.thief.getStartPos()];
         this._diff = 1;
-        this._path = [];
+        this._path = [board.thief.getStartPos()];
         this._end = false;
     }
 
-    // TODO Add isCaught in return
     isEnd(): boolean {
-        return this._end || this._path.length === 8;
+        return this._end ||
+            this._path.length === 9 ||
+            this.board.thief.isCaught();
     }
 
     getDiff(): number {
@@ -43,9 +44,8 @@ class PathImpl implements Path {
         return this._path;
     }
 
-    getLast(board: Board): Card | null {
+    getLast(board: Board): Card {
         const i = this._path.slice(-1)[0];
-        if(!i) return null;
         return board.getCard(i);
     }
 
@@ -62,16 +62,13 @@ class PathImpl implements Path {
         const d = p._diff;
         
         p._path.push(i);
+        if(this.diffMask.some(j => j === i)) p._diff++;
         const u = c.select(board);
-
-        if(this.diffMask.some(j => j === i)) {
-            p._diff++;
-        }
 
         return () => {
             p._path.pop();
-            u();
             p._diff = d;
+            u();
         };
     }
 
