@@ -77,24 +77,18 @@ class HeistImpl implements Heist {
      * The chest bonus equals the current chest value multiplied by the path difficulty.
      */
     
-    play(path: Path): boolean {
-        // if(path.isCaptured()) {
-        //     return false;
-        // }
+    play(path: number[]): void {
+        if(this.thief.isCaught()) {
+            return;
+        }
 
-        // const undos: Undo[] = path.map(i => {
-        //     const u = this.board.getCard(i).trigger(this.board);
-        //     return u;
-        // });
+        path.forEach(i => this.board.path.select(this.board, i));
         
-        // const undo = () => {
-        //     undos.forEach(u => u());
-        // };
-        
-        // this._undos = [...this._undos, undo];
-        // this.board.deal();
+        if(this.board.path.isEnd()) {
+            this.thief.setStealth(this.thief.getStealth() < 10? 10 : this.thief.getStealth());
+        }
 
-        return true;
+        this.board.deal();
     }
     
     undo(): void {

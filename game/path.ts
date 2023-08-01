@@ -19,7 +19,6 @@ class PathImpl implements Path {
 
     private _diff: number;
     private _path: number[];
-    private _end: boolean;
 
     constructor(board: Board) {
         this.board = board;
@@ -27,12 +26,10 @@ class PathImpl implements Path {
         this.diffMask = MASK[board.thief.getStartPos()];
         this._diff = 1;
         this._path = [board.thief.getStartPos()];
-        this._end = false;
     }
 
     isEnd(): boolean {
-        return this._end ||
-            this._path.length === 9 ||
+        return this._path.length === 9 ||
             this.board.thief.isCaught();
     }
 
@@ -53,6 +50,10 @@ class PathImpl implements Path {
         return this.initStealth;
     }
 
+    getState(): [number[], number, number] {
+        return [[...this.getPath()], this.board.thief.getStealth(), this.board.thief.getTreasures()];
+    }
+
     select(board: Board, i: Card| number): Undo | false {
         const c = typeof i === 'number'? board.getCard(i) : i;
         if(this.isEnd()) return false;
@@ -62,21 +63,13 @@ class PathImpl implements Path {
         const d = p._diff;
         
         p._path.push(c.index);
-        if(this.diffMask.some(j => j === i)) p._diff++;
         const u = c.select(board);
+        if(this.diffMask.some(j => j === i)) p._diff++;
 
         return () => {
             p._path.pop();
             p._diff = d;
             u();
-        };
-    }
-
-    end(): Undo {
-        const path = this;
-        path._end = true;
-        return () => {
-            path._end = false;
         };
     }
 }

@@ -26,9 +26,15 @@ class GuardImpl extends CardImpl implements Guard {
         return false;
     }
 
-    getFacing(board: Board): Card | null {
+    isFacing(board: Board, card: Card): boolean {
         const i = this.index + [-3, 1, 3, -1][this.lookDir];
-        return i < 0 || i > 8? null : board.getCard(i);
+        const facing = i < 0 || i > 8? null : board.getCard(i);
+        return facing?.is(card) ?? false;
+    }
+
+    isBackside(board: Board, card: Card): boolean {
+        const i = this.index + [3, -1, -3, 1][this.lookDir];
+        return board.getCard(i)?.is(card) ?? false;
     }
 
     getValue(board: Board): number {
@@ -36,7 +42,8 @@ class GuardImpl extends CardImpl implements Guard {
             super.getValue(board) + 
             (this.isLit(board)? 1 : 0) + 
             (this.isWatched(board)? 1 : 0) + 
-            (this.getModifier('alert') || 0)
+            this.getModifier('alert') +
+            this.getModifier('intruder')
         ) * board.path.getDiff();
         return value;
     }
@@ -52,16 +59,42 @@ class GuardImpl extends CardImpl implements Guard {
     }
 
     select(board: Board): Undo {
+        const cost = this.getValue(board);
         const undos = [super.select(board)];
-        const value = this.getValue(board);
-        
+
         // ? If a guard's value is higher than your remaining stealth points, he will capture you.
-        if(value > board.thief.getStealth()) {
+        if(cost > board.thief.getStealth()) {
             undos.push(board.thief.setCaught());
+            undos.push(board.thief.setStealth(board.thief.getStealth() - cost));
+            return () => {
+                undos.forEach(undo => undo());
+            }
+        }
+
+        const last = board.getCard(board.path.getPath()[board.path.getPath().length - 2]!);
+
+        if(this.isLit(board))
+        {
+            // ? If you approach a guard from his front, all other guards get +1 permanently.
+            
+            if(this.isFacing(board, last)) {
+                undos.push(...board.getGuards(this.index).map(g => g.setModifier('intruder', 1)));
+            }
+
+            undos.push(board.thief.setStealth(board.thief.getStealth() - cost));
         }
         else
         {
-            undos.push(board.thief.setStealth(board.thief.getStealth() - value));
+            // ? If you approach a guard in the shadow, stealth points are consumed.
+            // ? But, if from his backside, you don't have to spend any stealth points. 
+            // ! Gives you treasure for taken stealth points.
+
+            if(!this.isBackside(board, last))
+            {
+                undos.push(board.thief.setStealth(board.thief.getStealth() - cost));
+            }
+
+            undos.push(board.thief.setTreasures(board.thief.getTreasures() + cost));
         }
 
         return () => {

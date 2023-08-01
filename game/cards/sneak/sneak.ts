@@ -7,8 +7,11 @@ export interface SneakInt extends Stealth {
 
 export class SneakImpl extends CardImpl implements SneakInt {
 	
-	constructor() {
+	private value: number;
+
+	constructor(value: number = 1) {
 		super('sneak');
+		this.value = value;
 	}
 	
 	is(type: string): boolean {
@@ -16,12 +19,12 @@ export class SneakImpl extends CardImpl implements SneakInt {
 	}
 
 	getValue(board: Board): number {
-		return (this.isLit(board)? 0 :  2) * board.path.getDiff();
+		return (this.isLit(board)? 0 :  this.value) * board.path.getDiff();
 	}
 	
 	select(board: Board): Undo {
-		const u = super.select(board);
 		const uu = board.thief.setStealth(board.thief.getStealth() + this.getValue(board));
+		const u = super.select(board);
 		return () => {
 			u();
 			uu();
@@ -29,6 +32,6 @@ export class SneakImpl extends CardImpl implements SneakInt {
 	}
 }
 
-export default function Sneak(): SneakInt {
-	return new SneakImpl();
+export default function Sneak(value: number = 1): SneakInt {
+	return new SneakImpl(value);
 }

@@ -9,7 +9,7 @@ import pouch from './treasure/pouch';
 
 export function Guard(lookIndex: 0 | 1 | 2 | 3) { return guard(lookIndex) };
 export function Door() { return door() };
-export function Sneak() { return sneak() };
+export function Sneak(value: number = 1) { return sneak(value) };
 export function Traitor() { return traitor() };
 export function Hide() { return hide() };
 export function Torch() { return torch() };

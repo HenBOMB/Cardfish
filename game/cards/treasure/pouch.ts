@@ -23,8 +23,8 @@ export class PouchImpl extends CardImpl implements PouchInt {
     }
 
     select(board: Board): Undo {
-        const u = super.select(board);
         const uu = board.thief.setTreasures(board.thief.getTreasures() + this.getValue(board));
+        const u = super.select(board);
         return () => {
             u();
             uu();

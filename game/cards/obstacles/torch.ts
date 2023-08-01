@@ -25,9 +25,9 @@ export class TorchImpl extends CardImpl implements Card {
     }
     
     select(board: Board): Undo {
-        const u = super.select(board);
         const torch = this;
         const value = torch.getValue(board);
+        const u = super.select(board);
         const lit = torch._lit;
 
         torch._lit = false;

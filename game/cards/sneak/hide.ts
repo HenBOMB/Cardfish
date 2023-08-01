@@ -20,8 +20,8 @@ export class HideImpl extends CardImpl implements HideInt {
     }
 
     select(board: Board): Undo {
-        const u = super.select(board);
         const s = board.thief.getStealth();
+        const u = super.select(board);
         // TODO Only if you end your path on a hide card.
         return u;
         const uu = board.thief.setStealth(this.isLit(board)? s : s < 10? 10 : s);

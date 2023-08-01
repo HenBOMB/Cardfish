@@ -8,7 +8,7 @@ export interface Heist {
      * Plays a specified path of actions.
      * @param path - An array of numbers representing the sequence of actions to be played.
      */
-    play: (path: Path) => void;
+    play: (path: number[]) => void;
 
     /**
      * Undoes the last action performed.
@@ -66,12 +66,12 @@ export interface Board {
 }
 
 export interface Path {
-    end(): Undo;
     isEnd(): boolean;
     getDiff: () => number;
     getPath: () => number[];
     getLast: (board: Board) => Card;
     getInitStealth: () => number;
+    getState: () => [number[], number, number];
     select: (board: Board, i: Card | number) => Undo | false;
 }
 
@@ -104,8 +104,9 @@ export interface Thief extends Card {
 
 export interface Guard extends Card {
     isNocturnal(): boolean;
+    isBackside(board: Board, card: Card): boolean;
+    isFacing(board: Board, card: Card): boolean;
     setLook(card: Card): Undo;
-    getFacing(board: Board): Card | null;
 }
 
 export interface Equipment extends Card {

@@ -23,21 +23,25 @@ export default function evaluate(board: Board, weights: number[] = WEIGHTS): num
 
     const [ SxAa, SxAb, SxAc, SxAd, SxAe, SxAf ] = weights;
 
+    const full = board.path.getPath().length === 9;
+    const stealth = board.thief.getStealth();
+    const treasures = board.thief.getTreasures();
+    
     let _score = 0;
 
-    if(board.path.isEnd()) { 
-        _score += (board.thief.getStealth() - board.path.getInitStealth()) * SxAc;
+    if(board.path.isEnd() && !full) { 
+        _score += (stealth - board.path.getInitStealth()) * SxAc;
     }
 
-    _score += board.thief.getStealth() * SxAd;
+    _score += (full? stealth > 10? stealth : 10 : stealth) * SxAd;
 
-    _score += board.thief.getTreasures() * SxAe;
+    _score += treasures * SxAe;
 
     // ? Dodgy
     _score += (36 - board.getDeck().length) * SxAf;
 
     // ? This leads to higher path difficulty. More costly?
-    _score += board.path.getPath().length === 9? 999 : 0;//moves.length === 3? 3 : moves.length === 5? 2 : 1;
+    _score += full? 999 : 0;//moves.length === 3? 3 : moves.length === 5? 2 : 1;
     
     // TODO ? penalize for ending on bad square
 
