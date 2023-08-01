@@ -22,6 +22,10 @@ class GuardImpl extends CardImpl implements Guard {
         return super.is(type);
     }
 
+    isNocturnal(): boolean {
+        return false;
+    }
+
     getFacing(board: Board): Card | null {
         const i = this.index + [-3, 1, 3, -1][this.lookDir];
         return i < 0 || i > 8? null : board.getCard(i);

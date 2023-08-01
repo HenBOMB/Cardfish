@@ -48,7 +48,11 @@ export class ThiefImpl extends CardImpl implements Thief {
     getStartPos(): number {
         return this.i;
     }
-    
+
+    setStartPos(i: number): void {
+        this.i = i;
+    }
+
     setCaught(): Undo {
         const thief = this;
         thief._captured = true;

@@ -53,15 +53,15 @@ class PathImpl implements Path {
         return this.initStealth;
     }
 
-    select(board: Board, i: number): Undo | false {
-        const c = board.getCard(i);
+    select(board: Board, i: Card| number): Undo | false {
+        const c = typeof i === 'number'? board.getCard(i) : i;
         if(this.isEnd()) return false;
         if(this._path.some(j => j === i)) return false;
 
         const p = this;
         const d = p._diff;
         
-        p._path.push(i);
+        p._path.push(c.index);
         if(this.diffMask.some(j => j === i)) p._diff++;
         const u = c.select(board);
 

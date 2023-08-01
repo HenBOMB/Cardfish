@@ -19,13 +19,14 @@ export class CardImpl implements tCard {
     }
 
     isLit(board: Board): boolean {
-        return board.getAdj(this)
+        return board.getPerp(this)
             .some(c => c.is('torch') && c.isLit(board));
     }
 
     isWatched(board: Board): boolean {
         const perp = board.getPerp(this);
         return board.getGuards()
+            .filter(g => g.isNocturnal()? true : this.isLit(board))
             .filter((g: tCard) => perp.some((c: tCard) => c.is(g)))
             .some((g: Guard) => g.getFacing(board)?.is(this));
     }

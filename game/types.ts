@@ -72,7 +72,7 @@ export interface Path {
     getPath: () => number[];
     getLast: (board: Board) => Card;
     getInitStealth: () => number;
-    select: (board: Board, i: number) => Undo | false;
+    select: (board: Board, i: Card | number) => Undo | false;
 }
 
 // ? CARD TYPES
@@ -99,9 +99,11 @@ export interface Thief extends Card {
     getTreasures(): number;
     setTreasures(treasures: number): Undo;
     getStartPos: () => number;
+    setStartPos: (i: number) => void;
 }
 
 export interface Guard extends Card {
+    isNocturnal(): boolean;
     setLook(card: Card): Undo;
     getFacing(board: Board): Card | null;
 }

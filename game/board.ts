@@ -115,17 +115,17 @@ export class BoardImpl implements Board {
         drop();
 
         // ? deal the cards
-        for (let i = 0; i < 8; i++) 
-        {
-            let c = this._cards[i];
+        
+        this._cards = this._cards.map((c, i) => {
             c.index = i;
-            if(!c.is('empty')) continue;
-            c = this._deck.shift() || (Math.random() > 0.6? Guard(1) : Torch());
-            c.index = i;
-            this._cards[i] = c;
-        }
-
+            if(!c.is('empty')) return c; 
+            const card = this._deck.shift() || (Math.random() > 0.4? Guard(1) : Torch());
+            card.index = i;
+            return card;
+        });
+      
         // ? TODO Set thief start pos
+        this.thief.setStartPos(this._cards.findIndex(c => c.is('thief')));
     }
 }
 
