@@ -2,14 +2,13 @@ import { CardImpl } from './card';
 import { Board, Undo, Thief } from '../types';
 
 export class ThiefImpl extends CardImpl implements Thief {
-    private i: number;
     private _stealth: number;
     private _treasures: number;
     private _captured: boolean;
 
-    constructor(i: number) {
+    constructor(index: number) {
         super('thief');
-        this.i = i;
+        this.index = index;
         this._stealth = 10;
         this._treasures = 0;
         this._captured = false;
@@ -17,6 +16,10 @@ export class ThiefImpl extends CardImpl implements Thief {
 
     isCaught(): boolean {
         return this._captured;
+    }
+
+    getValue(board: Board): number {
+        return this._stealth;
     }
     
     getStealth(): number {
@@ -45,14 +48,6 @@ export class ThiefImpl extends CardImpl implements Thief {
         }
     }
 
-    getStartPos(): number {
-        return this.i;
-    }
-
-    setStartPos(i: number): void {
-        this.i = i;
-    }
-
     setCaught(): Undo {
         const thief = this;
         thief._captured = true;
@@ -62,6 +57,6 @@ export class ThiefImpl extends CardImpl implements Thief {
     }
 }
 
-export function createThief(i: number): Thief {
-    return new ThiefImpl(i);
+export function createThief(index: number): Thief {
+    return new ThiefImpl(index);
 }

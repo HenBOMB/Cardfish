@@ -14,12 +14,20 @@ export class TraitorImpl extends CardImpl implements TraitorInt {
     is(type: string): boolean {
         return super.is(type) || type === 'sneak';
     }
+    
+    getValue(board: Board): number {
+        return (
+            1 + 
+            (this.isWatched(board)? 1 : 0) + 
+            (this.isLit(board)? 1 : 0)
+        ) * board.path.getDiff();
+    }
 
     select(board: Board): Undo {
-        // TODO ? Not sure this is accurate
-        const a = (this.isLit(board)? 2 :  1) * board.path.getDiff();
-        const uu = board.thief.setStealth(board.thief.getStealth() + a);
-        const uuu = board.thief.setTreasures(a > board.thief.getTreasures()? 0 : (board.thief.getTreasures() - a));
+        // * Replenishes stealth points and takes away treasures
+        const value = this.getValue(board);
+        const uu = board.thief.setStealth(board.thief.getStealth() + value);
+        const uuu = board.thief.setTreasures(value > board.thief.getTreasures()? 0 : (board.thief.getTreasures() - value));
         const u = super.select(board);
 
         return () => {

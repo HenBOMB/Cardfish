@@ -23,14 +23,18 @@ class PathImpl implements Path {
     constructor(board: Board) {
         this.board = board;
         this.initStealth = board.thief.getStealth();
-        this.diffMask = MASK[board.thief.getStartPos()];
+        this.diffMask = MASK[board.thief.index];
         this._diff = 1;
-        this._path = [board.thief.getStartPos()];
+        this._path = [board.thief.index];
     }
 
     isEnd(): boolean {
         return this._path.length === 9 ||
             this.board.thief.isCaught();
+    }
+
+    isIn(index: number): boolean {
+        return this._path.some(i => i === index);
     }
 
     getDiff(): number {

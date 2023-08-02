@@ -13,7 +13,7 @@ class GuardImpl extends CardImpl implements Guard {
     // ? 0, 1, 2, 3
     private lookDir: number;
     
-    constructor(lookDir: 0 | 1 | 2 | 3) {
+    constructor(lookDir: number) {
         super('guard');
         this.lookDir = lookDir;
     }
@@ -103,6 +103,6 @@ class GuardImpl extends CardImpl implements Guard {
     }
 }
 
-export default function Common(lookDir: 0 | 1 | 2 | 3): Guard {
+export default function Common(lookDir: number): Guard {
     return new GuardImpl(lookDir);
 }

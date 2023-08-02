@@ -124,7 +124,7 @@ export default function generate(board: Board): number[] {
     const points = board.path.getPath().map(i => Point.from(i));
 
     return MAP[i].filter(i => 
-        !board.getCard(i).isSelected() &&
+        board.getCard(i).isSelectable(board) &&
         !pathsIntersect(
             points, 
             [Point.from(board.path.getLast(board).index), Point.from(i)]

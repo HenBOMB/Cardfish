@@ -24,15 +24,17 @@ export class CardImpl implements tCard {
     }
 
     isWatched(board: Board): boolean {
-        const perp = board.getPerp(this);
-        return board.getGuards()
-            .filter(g => g.isNocturnal()? true : this.isLit(board))
-            .filter((g: tCard) => perp.some((c: tCard) => c.is(g)))
-            .some((g: Guard) => g.isFacing(board, this));
+        return board.getPerp(this)
+            // ? Filter out all cards that are not guards.
+            .filter(c => c.is('guard')).map(c => c as Guard)
+            // ? Filter out all guards that are not facing this card.
+            .filter(g => g.isFacing(board, this))
+            // ? Filter out all guard that cannot see this card.
+            .filter(g => g.isNocturnal()? true : this.isLit(board)).length? true : false;
     }
 
-    isSelected(): boolean {
-        return this._selected;
+    isSelectable(board: Board): boolean {
+        return !this._selected;
     }
 
     getValue(board: Board): number {
@@ -55,9 +57,6 @@ export class CardImpl implements tCard {
             if(facing.length > 0) {
                 undos.push(...facing.map(g => g.setModifier('alert', 1)));
             }
-
-            // TODO FIX
-            // This causes all cards to be seen regardless.
 
             // ? Selecting an illuminated adjacent card makes a guard suspicious (?) and turns him into that card's direction.
             const nonfacing = guards.filter(g => !g.isFacing(board, card));

@@ -14,7 +14,7 @@ export class BoardImpl implements Board {
         this.thief = thief;
         this._cards = Array<Card>(9).fill(Empty());
         this._deck = [...deck];
-        this._cards[thief.getStartPos()] = thief;
+        this._cards[thief.index] = thief;
         this.path = createPath(this);
     }
 
@@ -31,15 +31,11 @@ export class BoardImpl implements Board {
         }
     }
 
-    /**
-     * @returns All cards on the board.
-     * @returns Empty and selected cards are excluded.
-     */
-    getCards() {
-        return this._cards.filter(c => c.id !== 'empty' && !c.isSelected());
+    getCards(): Card[] {
+        return this._cards.filter(c => c.id !== 'empty' && c.isSelectable(this));
     }
 
-    getDeck() {
+    getDeck(): Card[] {
         return this._deck;
     }
 
@@ -62,7 +58,7 @@ export class BoardImpl implements Board {
             [4, 5, 7],
         ];
         if(card.index < 0) console.log(card.id);
-        return MAP[card.index].map(i => this.getCard(i)).filter(c => !c.isSelected());
+        return MAP[card.index].map(i => this.getCard(i)).filter(c => c.isSelectable(this));
     }
 
     getPerp(card: Card): Card[] {
@@ -77,13 +73,13 @@ export class BoardImpl implements Board {
             [4, 6, 8],
             [5, 7],
         ];
-        return MAP[card.index].map(i => this.getCard(i)).filter(c => !c.isSelected());
+        return MAP[card.index].map(i => this.getCard(i)).filter(c => c.isSelectable(this));
     }
 
     getGuards(exclude: number = -1): tGuard[] {
         return this.getCards()
-            .filter(c => c.is('guard') && c.index !== exclude)
-            .map(c => c as tGuard);
+            .filter((c: Card) => c.is('guard') && c.index !== exclude)
+            .map((c: Card) => c as tGuard);
     }
 
     shuffle(): void {
@@ -123,9 +119,6 @@ export class BoardImpl implements Board {
             card.index = i;
             return card;
         });
-      
-        // ? TODO Set thief start pos
-        this.thief.setStartPos(this._cards.findIndex(c => c.is('thief')));
     }
 }
 

@@ -1,11 +1,7 @@
 import { Board, Equipment, Undo } from '../../types';
 import { CardImpl } from '../card';
 
-export interface ChestInt extends Equipment {
-
-}
-
-class ChestImpl extends CardImpl implements ChestInt {
+class ChestImpl extends CardImpl implements Equipment {
 
     constructor() {
         super('chest');
@@ -16,6 +12,6 @@ class ChestImpl extends CardImpl implements ChestInt {
     }
 }
 
-export default function Common(): ChestInt {
+export default function Common(): Equipment {
     return new ChestImpl();
 }

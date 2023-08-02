@@ -1,5 +1,6 @@
 import { createBoard } from './board';
 import { createThief } from './cards/thief';
+import createPath from './path';
 import { Heist, Card, Undo, Thief, Board, Path } from './types';
 
 class HeistImpl implements Heist {
@@ -77,17 +78,34 @@ class HeistImpl implements Heist {
      * The chest bonus equals the current chest value multiplied by the path difficulty.
      */
     
+    /** NOTES
+     * If your thief stands in the shadow and has 0 stealth points left she can avoid enemies.
+     * When you have 0 stealth points, you will sneak past shadowed enemies without removing them from the board.
+     * Shadow stepping an enemy will cost you stealth points.
+     * 
+     * CONTRACTS
+     * Clearing the board will increase cards in your inventory by +1.
+     * Stealth and treasure are the same.
+     * At 1 or less stealth treasure are worth double. (unavailable)
+     */
+    
     play(path: number[]): void {
         if(this.thief.isCaught()) {
             return;
         }
-
-        path.forEach(i => this.board.path.select(this.board, i));
         
+        path.forEach(i => this.board.path.select(this.board, i));
+
         if(this.board.path.isEnd()) {
             this.thief.setStealth(this.thief.getStealth() < 10? 10 : this.thief.getStealth());
         }
 
+        path.forEach(i => this.board.setCard(i));
+
+        this.board.setCard(this.thief.index);
+        this.board.setCard(path[path.length-1], this.thief);
+
+        this.board.path = createPath(this.board);
         this.board.deal();
     }
     
@@ -95,7 +113,6 @@ class HeistImpl implements Heist {
         this._undos.length && this._undos.shift()!();
     }
 }
-
 
 export function createHeist(i: number, deck: Card[]): Heist {
     return new HeistImpl(i, deck);

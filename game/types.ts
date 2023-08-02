@@ -67,6 +67,7 @@ export interface Board {
 
 export interface Path {
     isEnd(): boolean;
+    isIn(index: number): boolean;
     getDiff: () => number;
     getPath: () => number[];
     getLast: (board: Board) => Card;
@@ -85,7 +86,7 @@ export interface Card {
     is(type: Card | string): boolean;
     isLit(board: Board): boolean;
     isWatched(board: Board): boolean;
-    isSelected(): boolean;
+    isSelectable(board: Board): boolean;
     select(board: Board): Undo;
     getModifier(key: string): number;
     setModifier(key: string, value: number): Undo;
@@ -98,8 +99,6 @@ export interface Thief extends Card {
     setStealth(stealth: number): Undo;
     getTreasures(): number;
     setTreasures(treasures: number): Undo;
-    getStartPos: () => number;
-    setStartPos: (i: number) => void;
 }
 
 export interface Guard extends Card {
