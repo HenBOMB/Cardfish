@@ -93,7 +93,9 @@ class HeistImpl implements Heist {
         if(this.thief.isCaught()) {
             return;
         }
-        
+
+        this.board.path = createPath(this.board);
+
         path.forEach(i => this.board.path.select(this.board, i));
 
         if(this.board.path.isEnd()) {

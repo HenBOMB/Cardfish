@@ -12,10 +12,12 @@ class GuardImpl extends CardImpl implements Guard {
     
     // ? 0, 1, 2, 3
     private lookDir: number;
+	private value: number;
     
-    constructor(lookDir: number) {
+    constructor(lookDir: number, value: number) {
         super('guard');
         this.lookDir = lookDir;
+        this.value = value;
     }
     
     is(type: string): boolean {
@@ -39,7 +41,7 @@ class GuardImpl extends CardImpl implements Guard {
 
     getValue(board: Board): number {
         const value = (
-            super.getValue(board) + 
+            this.value + 
             (this.isLit(board)? 1 : 0) + 
             (this.isWatched(board)? 1 : 0) + 
             this.getModifier('alert') +
@@ -103,6 +105,6 @@ class GuardImpl extends CardImpl implements Guard {
     }
 }
 
-export default function Common(lookDir: number): Guard {
-    return new GuardImpl(lookDir);
+export default function Common(lookDir: number, value: number): Guard {
+    return new GuardImpl(lookDir, value);
 }

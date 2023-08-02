@@ -8,7 +8,7 @@ import hide from './sneak/hide';
 import pouch from './treasure/pouch';
 import chest from './treasure/chest';
 
-export function Guard(lookDir: 0 | 1 | 2 | 3) { return guard(lookDir) };
+export function Guard(lookDir: 0 | 1 | 2 | 3, value: number = 1) { return guard(lookDir, value) };
 export function Door(lockDir: 0 | 1 | 2 | 3) { return door(lockDir) };
 export function Sneak(value: number = 1) { return sneak(value) };
 export function Traitor() { return traitor() };

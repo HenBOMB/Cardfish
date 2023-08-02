@@ -6,7 +6,7 @@ export class CardImpl implements tCard {
 
     private _selected: boolean;
     private _modifiers: { [key: string]: number };
-    
+
     constructor(id: string) {
         this.id = id;
         this.index = -1;
