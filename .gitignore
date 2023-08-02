@@ -1,0 +1,4 @@
+/node-modules/*
+.replit
+replit.nix
+tsconfig.json
