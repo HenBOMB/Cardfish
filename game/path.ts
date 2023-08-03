@@ -61,14 +61,14 @@ class PathImpl implements Path {
     select(board: Board, i: Card| number): Undo | false {
         const c = typeof i === 'number'? board.getCard(i) : i;
         if(this.isEnd()) return false;
-        if(this._path.some(j => j === i)) return false;
+        if(this._path.some(j => j === c.index)) return false;
 
         const p = this;
         const d = p._diff;
         
         p._path.push(c.index);
         const u = c.select(board);
-        if(this.diffMask.some(j => j === i)) p._diff++;
+        if(this.diffMask.some(j => j === c.index)) p._diff++;
 
         return () => {
             p._path.pop();

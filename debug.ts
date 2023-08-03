@@ -18,6 +18,7 @@ import { Heist, Undo } from './game/types';
 
 type State = {
     index: number;
+    diff: number;
     stealth: number;
     treasures: number;
     cards: { 
@@ -43,12 +44,14 @@ export default function Debug (
     for (let i = 0; i < path.length; i++) {
         const index = path[i];
         const card = board.getCard(index);
-        const undo = board.path.select(board, card);
-
-        if(undo) undos.push(undo);
 
         vals[index] = card.getValue(board);
+      
+        const undo = board.path.select(board, card);
+        
+        if(undo) undos.push(undo);
 
+        const diff = board.path.getDiff();
         const stealth = heist.thief.getStealth();
         const treasures = heist.thief.getTreasures();
         const cards = Array(9).fill(null).map((e, i) => {
@@ -61,7 +64,7 @@ export default function Debug (
             };
         });
 
-        states.push({ index, stealth, treasures, cards });
+        states.push({ index, diff, stealth, treasures, cards });
     }
 
     undos.forEach(u => u());
@@ -70,7 +73,7 @@ export default function Debug (
 
     for (let i = 0; i < states.length;) 
     {
-        const { index, stealth, treasures, cards } = states[i];
+        const { index, diff, stealth, treasures, cards } = states[i];
         
         console.clear();
         console.log(`Path ${path.map(h => h===index? `(${h})` : h).join(' > ')}`);
@@ -79,20 +82,20 @@ export default function Debug (
         // states.slice(0,i).reduce((a, b) => a + b.stealth, 0);
         //const tDiff = treasures - (states[i-1]?.treasures || treasures);
         const tSum = '';//!tDiff? '' : `(${tDiff > 0? '+' + tDiff : '-' + Math.abs(tDiff)})`;
-        console.log(`Stealth: ${stealth}/${path.length===9? iS < 10? 10 : iS : iS} | Treasures: ${treasures}/${iT} ${tSum}\n`);
+        console.log(`Stealth: ${stealth}/${path.length===9? iS < 10? 10 : iS : iS} | Treasures: ${treasures}/${iT} ${tSum}\nDifficulty: ${diff}\n`);
         
         const _cards = cards.map(({ id, index, value, selectable }) => {
             if(id === 'thief') 
             {
-                return `${id} [${stealth}, ${treasures}]`;
+                return `${id}\t`;
             }
-            return `${id[0].toUpperCase() + id.slice(1, 5)} ${(path.slice(0,i+1).includes(index)? '<v>' : (selectable? '(v)' : `[v]`)).replace('v', value as any)}`;
+            return `${id[0].toUpperCase() + id.slice(1, 5)} ${(path.slice(0,i+1).includes(index)? '{v}' : (selectable? '(v)' : `[v]`)).replace('v', value as any)}`;
         });
 
         console.log(_cards.slice(0,3).join('\t'));
         console.log(_cards.slice(3,6).join('\t'));
         console.log(_cards.slice(6,9).join('\t'));
-        console.log("\nUse <←> / <→> to navigate path. <q> to quit.");
+        console.log("\nUse <←> / <a> / <→> / <d> to navigate path. <q> to quit.");
         
         let key = '';
         let arrow = '';
@@ -108,11 +111,11 @@ export default function Debug (
             break;
         }
 
-        if(arrow === 'C') 
+        if(arrow === 'C' || key === 'd') 
         { 
             i++;
         }
-        else if(arrow === 'D' && i > 0) 
+        else if((arrow === 'D' || key === 'a') && i > 0) 
         {
             i--;
         }

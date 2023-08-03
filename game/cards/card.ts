@@ -4,14 +4,16 @@ export class CardImpl implements tCard {
     id: string;
     index: number;
 
+	private _value: number;
     private _selected: boolean;
     private _modifiers: { [key: string]: number };
 
-    constructor(id: string) {
+    constructor(id: string, value: number = 1) {
         this.id = id;
-        this.index = -1;
+        this.index = -4;
         this._selected = false;
         this._modifiers = { };
+		this._value = value;
     }
 
     is(type: tCard | string): boolean {
@@ -33,12 +35,21 @@ export class CardImpl implements tCard {
             .filter(g => g.isNocturnal()? true : this.isLit(board)).length? true : false;
     }
 
-    isSelectable(board: Board): boolean {
+    isSelectable(_: Board): boolean {
         return !this._selected;
     }
 
+	setValue(value: number): Undo {
+		const card = this;
+		const old = card._value;
+		card._value = value;
+		return () => {
+			this._value = old;
+		}
+	}
+
     getValue(board: Board): number {
-        return 1;
+        return this._value;
     }
 
     select(board: Board): Undo {
@@ -85,6 +96,6 @@ export class CardImpl implements tCard {
     }
 }
 
-export default function Card(id: string): tCard {
-    return new CardImpl(id);
+export default function Card(id: string, value: number): tCard {
+    return new CardImpl(id, value);
 }

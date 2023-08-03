@@ -26,6 +26,9 @@ heist.play([6, 7, 8, 5, 4, 2, 1, 0, 3]);
 // var state = bestPath(heist);
 heist.play([3, 0, 1, 2, 4, 5, 8, 7, 6]);
 
+// ? playing my equipment card
+heist.play(0) //? cloak lvl 3 (+8)
+
 var state: any = bestPath(heist);
 
 Debug(heist, state);

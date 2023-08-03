@@ -88,6 +88,8 @@ export interface Card {
     isWatched(board: Board): boolean;
     isSelectable(board: Board): boolean;
     select(board: Board): Undo;
+	getValue(board: Board): number;
+	setValue(value: number): Undo;
     getModifier(key: string): number;
     setModifier(key: string, value: number): Undo;
 }

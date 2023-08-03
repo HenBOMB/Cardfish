@@ -59,7 +59,7 @@ class HeistImpl implements Heist {
     /** EQUIPMENT
      * Each heist you can take equipment cards with you. (3)
      * Your inventory can hold up to 3 cards.
-     * Equipment cards are used becore you start your path.
+     * Equipment cards are used before you start your path.
      */
 
     /** TREASURES
@@ -83,14 +83,19 @@ class HeistImpl implements Heist {
      * When you have 0 stealth points, you will sneak past shadowed enemies without removing them from the board.
      * Shadow stepping an enemy will cost you stealth points.
      * 
-     * CONTRACTS
-     * Clearing the board will increase cards in your inventory by +1.
-     * Stealth and treasure are the same.
-     * At 1 or less stealth treasure are worth double. (unavailable)
+     * CONTRACTS (my acc)
+     * Clearing the board will increase cards in your inventory by +1. (unlocked)
+     * Stealth and treasure are the same. (unlocked)
+     * At 1 or less stealth treasure are worth double. (locked)
      */
-    
+
+	equip(slot: 0 | 1 | 2, card: Card): void {
+		// TODO
+	}
+	
     play(path: number[]): void {
-        if(this.thief.isCaught()) {
+        if(this.thief.isCaught()) 
+		{
             return;
         }
 
@@ -98,7 +103,8 @@ class HeistImpl implements Heist {
 
         path.forEach(i => this.board.path.select(this.board, i));
 
-        if(this.board.path.isEnd()) {
+        if(this.board.path.isEnd()) 
+		{
             this.thief.setStealth(this.thief.getStealth() < 10? 10 : this.thief.getStealth());
         }
 
