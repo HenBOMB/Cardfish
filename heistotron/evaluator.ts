@@ -1,49 +1,92 @@
-import { Board, Path } from "../game/types";
+import { Heist, Path } from "../game/types";
 
-const WEIGHTS: number[] = [
-    // ? Unknown
-    0.0,
-    // ? Unknown
-    0.0,
+const WEIGHTS: number[][] = [
+    [
+        // ? Full path worth.
+        100,
+        // ? Exit card worth.
+        200,
+        // ? Stealth worth.
+        0.5,
+        // ? Treasure worth.
+        0.25,
+    ],
+    [
+        100,
+        200,
+        0.2,
+        1.5,
+    ]
+];
+
+const P_WEIGHTS: number[] = [
     // ? Start - end penalty worth.
     0.2,
-    // ? Stealth worth.
-    0.5,
-    // ? Treasure worth.
-    0.2,
-    // ? Card worth.
+    // ? Torch worth.
     1.0
 ];
 
-export default function evaluate(board: Board, weights: number[] = WEIGHTS): number {
-
-    if(board.thief.isCaught()) {
+export default function evaluate(heist: Heist, weights: number[][] = WEIGHTS): number {
+    if(heist.thief.isCaught()) 
+    {
         return -999;
     }
+    
+    const last = heist.path.getLast(heist);
+    const isFull = heist.path.getPath().length === 9;
+    const isEnd = last.is('exit');
+    const stealth = heist.thief.getValue();
 
-    const [ SxAa, SxAb, SxAc, SxAd, SxAe, SxAf ] = weights;
+    const x = isFull? 1 : 0;
 
-    const full = board.path.getPath().length === 9;
-    const stealth = board.thief.getStealth();
-    const treasures = board.thief.getTreasures();
+    const [ SxAa, SxAb, SxAc, SxAd ] = weights[x];
     
     let _score = 0;
 
-    if(board.path.isEnd() && !full) { 
-        _score += (stealth - board.path.getInitStealth()) * SxAc;
-    }
+    // ? Full path worth.
+    _score += isFull? SxAa : 0;
 
-    _score += (full? stealth > 10? stealth : 10 : stealth) * SxAd;
+    // ? Exit card worth.
+    _score += isEnd? SxAb : 0;
 
-    _score += treasures * SxAe;
+    // ? Stealth worth.
+    _score += (isFull? stealth > 10? stealth : 10 : stealth) * SxAc;
+
+    // ? Treasure worth.
+    _score += heist.thief.getScore() * SxAd;
+
+    _score += heist.path.getPath().filter(i => heist.getCard(i).is('torch')).length * 1;
 
     // ? Dodgy
-    _score += (36 - board.getDeck().length) * SxAf;
+    //_score += (36 - heist.getDeck().length) * SxAf;
 
     // ? This leads to higher path difficulty. More costly?
-    _score += full? 999 : 0;//moves.length === 3? 3 : moves.length === 5? 2 : 1;
     
+    // ? Start - end penalty worth.
+    // if(heist.path.isEnd() && !full) { 
+    //     _score += (stealth - heist.path.getInitStealth()) * SxAc;
+    // }
+
+    // ! More diff (+1) paths, more costly but more score?.
+
     // TODO ? penalize for ending on bad square
+
+    return _score;
+}
+
+export function potential(heist: Heist, weights: number[] = P_WEIGHTS): number {
+    let _score = evaluate(heist, WEIGHTS);
+
+    // ! Play the path and deal random cards.
+
+    /**
+     * If the heist has an exit card. Then we can calculate the potential score:
+     * 
+     * Calc pot score of landing on edge.
+     * Bad when ending path in middle of heist.
+     */
+
+
 
     return _score;
 }

@@ -1,11 +1,7 @@
 import { CardImpl } from '../card';
-import { Board, Card, Undo } from '../../types';
+import { Heist, Undo } from '../../types';
 
-export interface PouchInt extends Card {
-
-}
-
-export class PouchImpl extends CardImpl implements PouchInt {
+export default class Pouch extends CardImpl {
 
     constructor() {
         super('pouch');
@@ -15,23 +11,19 @@ export class PouchImpl extends CardImpl implements PouchInt {
         return super.is(type) || type === 'treasure';
     }
 
-    getValue(board: Board): number {
+    getValue(heist: Heist): number {
         return (1 +
-            (this.isLit(board)? 1 : 0) + 
-            (this.isWatched(board)? 1 : 0)
-        ) * board.path.getDiff();
+            (this.isLit(heist)? 1 : 0) + 
+            (this.isWatched(heist)? 1 : 0)
+        ) * heist.path.getDiff();
     }
 
-    select(board: Board): Undo {
-        const uu = board.thief.setTreasures(board.thief.getTreasures() + this.getValue(board));
-        const u = super.select(board);
+    select(heist: Heist): Undo {
+        const uu = heist.thief.setScore(heist.thief.getScore() + this.getValue(heist));
+        const u = super.select(heist);
         return () => {
             u();
             uu();
         }
     }
-}
-
-export default function Pouch(): PouchInt {
-    return new PouchImpl();
 }

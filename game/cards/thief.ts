@@ -1,58 +1,51 @@
 import { CardImpl } from './card';
-import { Board, Undo, Thief } from '../types';
+import { Undo, Thief } from '../types';
 
 export class ThiefImpl extends CardImpl implements Thief {
-    private _stealth: number;
-    private _treasures: number;
-    private _captured: boolean;
+    private _score: number;
+    private _status: number;
 
     constructor(index: number) {
-        super('thief');
-        this.index = index;
-        this._stealth = 10;
-        this._treasures = 0;
-        this._captured = false;
+        super('thief', 10);
+        this._index = index;
+        this._score = 0;
+        this._status = 0;
     }
 
     isCaught(): boolean {
-        return this._captured;
+        return this._status === 1;
     }
 
-    getValue(board: Board): number {
-        return this._stealth;
-    }
-    
-    getStealth(): number {
-        return this._stealth;
+    isEscaped(): boolean {
+        return this._status === 2;
     }
 
-    setStealth(stealth: number): Undo {
+    getScore(): number {
+        return this._score;
+    }
+
+    setScore(score: number): Undo {
         const thief = this;
-        const s = thief._stealth;
-        thief._stealth = stealth;
+        const old = thief._score;
+        thief._score = score;
         return () => {
-            thief._stealth = s;
-        }
-    }
-
-    getTreasures(): number {
-        return this._treasures;
-    }
-
-    setTreasures(treasures: number): Undo {
-        const thief = this;
-        const s = thief._treasures;
-        thief._treasures = treasures;
-        return () => {
-            thief._treasures = s;
+            thief._score = old;
         }
     }
 
     setCaught(): Undo {
         const thief = this;
-        thief._captured = true;
+        thief._status = 1;
         return () => {
-            thief._captured = false;
+            thief._status = 0;
+        }
+    }
+
+    setEscape(): Undo {
+        const thief = this;
+        thief._status = 2;
+        return () => {
+            thief._status = 0;
         }
     }
 }

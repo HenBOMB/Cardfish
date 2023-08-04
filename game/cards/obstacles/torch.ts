@@ -1,7 +1,7 @@
 import { CardImpl } from '../card';
-import { Board, Card, Undo } from '../../types';
+import { Heist, Card, Undo } from '../../types';
 
-export class TorchImpl extends CardImpl implements Card {
+export default class Torch extends CardImpl implements Card {
 
     private _lit: boolean = true;
 
@@ -13,25 +13,25 @@ export class TorchImpl extends CardImpl implements Card {
         return super.is(type) || type === 'obstacle';
     }
 
-    isLit(board: Board): boolean {
+    isLit(heist: Heist): boolean {
         return this._lit;
     }
 
-    getValue(board: Board): number {
+    getValue(heist: Heist): number {
         return (
-            (this.isLit(board)? 1 : 0) + 
-            (this.isWatched(board)? 1 : 0)
-        ) * board.path.getDiff();
+            (this.isLit(heist)? 1 : 0) + 
+            (this.isWatched(heist)? 1 : 0)
+        ) * heist.path.getDiff();
     }
     
-    select(board: Board): Undo {
+    select(heist: Heist): Undo {
         const torch = this;
-        const value = torch.getValue(board);
-        const u = super.select(board);
+        const value = torch.getValue(heist);
+        const u = super.select(heist);
         const lit = torch._lit;
 
         torch._lit = false;
-        const uu = board.thief.setStealth(board.thief.getStealth() - value);
+        const uu = heist.thief.setValue(heist.thief.getValue() - value);
 
         return () => {
             u();
@@ -41,6 +41,3 @@ export class TorchImpl extends CardImpl implements Card {
     }
 }
 
-export default function Torch(): Card {
-    return new TorchImpl();
-}

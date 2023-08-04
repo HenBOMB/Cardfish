@@ -1,37 +1,26 @@
 import { CardImpl } from '../card';
-import { Board, Stealth, Undo } from '../../types';
+import { Heist, Stealth, Undo } from '../../types';
 
-export interface SneakInt extends Stealth {
+export default class SneakImpl extends CardImpl {
 	
-}
-
-export class SneakImpl extends CardImpl implements SneakInt {
-	
-	private value: number;
-
 	constructor(value: number = 1) {
-		super('sneak');
-		this.value = value;
+		super('sneak', value);
 	}
 	
 	is(type: string): boolean {
 		return super.is(type);
 	}
 
-	getValue(board: Board): number {
-		return (this.isLit(board)? 0 :  this.value) * board.path.getDiff();
+	getValue(heist: Heist): number {
+		return (this.isLit(heist)? 0 :  this._value) * heist.path.getDiff();
 	}
 	
-	select(board: Board): Undo {
-		const uu = board.thief.setStealth(board.thief.getStealth() + this.getValue(board));
-		const u = super.select(board);
+	select(heist: Heist): Undo {
+		const u0 = heist.thief.setValue(heist.thief.getValue() + this.getValue(heist));
+		const u1 = super.select(heist);
 		return () => {
-			u();
-			uu();
+			u0();
+			u1();
 		}
 	}
-}
-
-export default function Sneak(value: number = 1): SneakInt {
-	return new SneakImpl(value);
 }

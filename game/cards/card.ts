@@ -1,41 +1,41 @@
-import { Board, Card as tCard, Guard, Undo } from '../types';
+import { Heist, Card as tCard, Guard, Undo } from '../types';
 
 export class CardImpl implements tCard {
     id: string;
-    index: number;
+    _index: number;
 
-	private _value: number;
+	protected _value: number;
     private _selected: boolean;
     private _modifiers: { [key: string]: number };
 
     constructor(id: string, value: number = 1) {
         this.id = id;
-        this.index = -4;
+        this._index = -4;
         this._selected = false;
         this._modifiers = { };
 		this._value = value;
     }
 
     is(type: tCard | string): boolean {
-        return typeof type === 'string'? this.id === type : (this.id === type.id && this.index === type.index);
+        return typeof type === 'string'? this.id === type : (this.id === type.id && this._index === type._index);
     }
 
-    isLit(board: Board): boolean {
-        return board.getPerp(this)
-            .some(c => c.is('torch') && c.isLit(board));
+    isLit(heist: Heist): boolean {
+        return heist.getPerp(this)
+            .some(c => c.is('torch') && c.isLit(heist));
     }
 
-    isWatched(board: Board): boolean {
-        return board.getPerp(this)
+     isWatched(heist: Heist): boolean {
+        return heist.getPerp(this)
             // ? Filter out all cards that are not guards.
             .filter(c => c.is('guard')).map(c => c as Guard)
             // ? Filter out all guards that are not facing this card.
-            .filter(g => g.isFacing(board, this))
+            .filter(g => g.isFacing(heist, this))
             // ? Filter out all guard that cannot see this card.
-            .filter(g => g.isNocturnal()? true : this.isLit(board)).length? true : false;
+            .filter(g => g.isNocturnal()? true : this.isLit(heist)).length? true : false;
     }
 
-    isSelectable(_: Board): boolean {
+    isSelectable(_: Heist): boolean {
         return !this._selected;
     }
 
@@ -48,29 +48,29 @@ export class CardImpl implements tCard {
 		}
 	}
 
-    getValue(board: Board): number {
+    getValue(heist: Heist): number {
         return this._value;
     }
 
-    select(board: Board): Undo {
+    select(heist: Heist): Undo {
         const card = this;
         const undos: Undo[] = [];
 
         card._selected = true;
 
         // ! Custom for guards
-        if(card.isLit(board))
+        if(card.isLit(heist))
         {
-            const guards: Guard[] = board.getPerp(card).filter(c => c.is('guard')).map(c => c as Guard);
+            const guards: Guard[] = heist.getPerp(card).filter(c => c.is('guard')).map(c => c as Guard);
         
             // ? If you select a card that was watched by a guard, the guard is alerted (!) and gets +1 permanently.
-            const facing = guards.filter(g => g.isFacing(board, card));
+            const facing = guards.filter(g => g.isFacing(heist, card));
             if(facing.length > 0) {
                 undos.push(...facing.map(g => g.setModifier('alert', 1)));
             }
 
             // ? Selecting an illuminated adjacent card makes a guard suspicious (?) and turns him into that card's direction.
-            const nonfacing = guards.filter(g => !g.isFacing(board, card));
+            const nonfacing = guards.filter(g => !g.isFacing(heist, card));
             if(nonfacing.length > 0) {
                 undos.push(...nonfacing.map(g => g.setLook(card)));
             }

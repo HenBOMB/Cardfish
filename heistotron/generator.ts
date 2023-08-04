@@ -1,4 +1,4 @@
-import { Board, Card, Path } from "../game/types";
+import { Heist, Card, Path } from "../game/types";
 
 class Point {
     x: number;
@@ -70,12 +70,14 @@ function segmentsIntersect (
     return true;
 }
 
+// TODO Not sure if this works 100%
+// EDIT: Paths shorter than 3 used to intersect for some reason..
 function pathsIntersect (
       p0: Point[],
       p1: Point[]
   ): boolean {
     
-    if(p0.length < 2 || p1.length < 2)
+    if(p0.length < 4 || p1.length < 2)
     {
         return false;
     }
@@ -119,15 +121,17 @@ function pathsIntersect (
     return false;
 }
   
-export default function generate(board: Board): number[] {
-    const i = board.path.getPath().slice(-1)[0];
-    const points = board.path.getPath().map(i => Point.from(i));
+export default function generate(heist: Heist): number[] {
+    if(heist.path.getLast(heist).is('exit') || heist.thief.isCaught()) return [];
+
+    const i = heist.path.getPath().slice(-1)[0];
+    const points = heist.path.getPath().map(i => Point.from(i));
 
     return MAP[i].filter(i => 
-        board.getCard(i).isSelectable(board) &&
+        heist.getCard(i).isSelectable(heist) &&
         !pathsIntersect(
             points, 
-            [Point.from(board.path.getLast(board).index), Point.from(i)]
+            [Point.from(heist.path.getLast(heist)._index), Point.from(i)]
         )
     );
 }

@@ -1,11 +1,7 @@
 import { CardImpl } from '../card';
-import { Board, Stealth, Undo } from '../../types';
+import { Heist, Stealth, Undo } from '../../types';
 
-export interface TraitorInt extends Stealth {
-
-}
-
-export class TraitorImpl extends CardImpl implements TraitorInt {
+export default class Traitor extends CardImpl {
     
     constructor() {
         super('traitor');
@@ -15,20 +11,20 @@ export class TraitorImpl extends CardImpl implements TraitorInt {
         return super.is(type) || type === 'sneak';
     }
     
-    getValue(board: Board): number {
+    getValue(heist: Heist): number {
         return (
             1 + 
-            (this.isWatched(board)? 1 : 0) + 
-            (this.isLit(board)? 1 : 0)
-        ) * board.path.getDiff();
+            (this.isWatched(heist)? 1 : 0) + 
+            (this.isLit(heist)? 1 : 0)
+        ) * heist.path.getDiff();
     }
 
-    select(board: Board): Undo {
+    select(heist: Heist): Undo {
         // * Replenishes stealth points and takes away treasures
-        const value = this.getValue(board);
-        const uu = board.thief.setStealth(board.thief.getStealth() + value);
-        const uuu = board.thief.setTreasures(value > board.thief.getTreasures()? 0 : (board.thief.getTreasures() - value));
-        const u = super.select(board);
+        const value = this.getValue(heist);
+        const uu = heist.thief.setValue(heist.thief.getValue() + value);
+        const uuu = heist.thief.setScore(value > heist.thief.getScore()? 0 : (heist.thief.getScore() - value));
+        const u = super.select(heist);
 
         return () => {
           u();
@@ -36,8 +32,4 @@ export class TraitorImpl extends CardImpl implements TraitorInt {
           uuu();
         }
       }
-}
-
-export default function Traitor(): TraitorInt {
-    return new TraitorImpl();
 }

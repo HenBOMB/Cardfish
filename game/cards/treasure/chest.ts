@@ -1,7 +1,7 @@
-import { Board, Equipment, Undo } from '../../types';
+import { Heist, Undo } from '../../types';
 import { CardImpl } from '../card';
 
-class ChestImpl extends CardImpl implements Equipment {
+export default class Chest extends CardImpl {
 
     constructor() {
         super('chest');
@@ -11,25 +11,27 @@ class ChestImpl extends CardImpl implements Equipment {
         return super.is(type) || type === 'equipment';
     }
 
-    getValue(board: Board): number {
+    // ? Increases value each turn
+    // ? Treasure bonus is value times path difficulty.
+
+    getValue(heist: Heist): number {
         return (
             1 +
-            (this.isLit(board)? 1 : 0) + 
-            (this.isWatched(board)? 1 : 0) 
-        ) + this.getModifier('turn') * board.path.getDiff();
+            (this.isLit(heist)? 1 : 0) + 
+            (this.isWatched(heist)? 1 : 0) 
+        ) + this.getModifier('turn') * heist.path.getDiff();
     }
 
-    select(board: Board): Undo {
-        const value = this.getValue(board);
-        const uu = board.thief.setStealth(board.thief.getStealth() - value);
-        const u = super.select(board);
+    select(heist: Heist): Undo {
+        const value = this.getValue(heist);
+        const bonus = value * heist.path.getDiff();
+        const u0 = heist.thief.setScore(heist.thief.getScore() + bonus);
+        const u1 = heist.thief.setValue(heist.thief.getValue() - value);
+        const u2 = super.select(heist);
         return () => {
-            u();
-            uu();
+            u0();
+            u1();
+            u2();
         }
     }
-}
-
-export default function Common(): Equipment {
-    return new ChestImpl();
 }

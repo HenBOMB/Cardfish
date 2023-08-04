@@ -1,4 +1,4 @@
-import { Path, Board, Undo, Card, Guard } from './types';
+import { Path, Heist, Undo, Card, Guard } from './types';
 
 const MASK = [
     [2, 5, 6, 7, 8],
@@ -14,23 +14,23 @@ const MASK = [
 
 class PathImpl implements Path {
     private initStealth: number;
-    private board: Board;
+    private heist: Heist;
     private diffMask: number[];
 
     private _diff: number;
     private _path: number[];
 
-    constructor(board: Board) {
-        this.board = board;
-        this.initStealth = board.thief.getStealth();
-        this.diffMask = MASK[board.thief.index];
+    constructor(heist: Heist) {
+        this.heist = heist;
+        this.initStealth = heist.thief.getValue();
+        this.diffMask = MASK[heist.thief._index];
         this._diff = 1;
-        this._path = [board.thief.index];
+        this._path = [heist.thief._index];
     }
 
     isEnd(): boolean {
         return this._path.length === 9 ||
-            this.board.thief.isCaught();
+            this.heist.thief.isCaught();
     }
 
     isIn(index: number): boolean {
@@ -45,9 +45,9 @@ class PathImpl implements Path {
         return this._path;
     }
 
-    getLast(board: Board): Card {
+    getLast(heist: Heist): Card {
         const i = this._path.slice(-1)[0];
-        return board.getCard(i);
+        return heist.getCard(i);
     }
 
     getInitStealth(): number {
@@ -55,20 +55,20 @@ class PathImpl implements Path {
     }
 
     getState(): [number[], number, number] {
-        return [[...this.getPath()], this.board.thief.getStealth(), this.board.thief.getTreasures()];
+        return [[...this.getPath()], this.heist.thief.getValue(), this.heist.thief.getScore()];
     }
 
-    select(board: Board, i: Card| number): Undo | false {
-        const c = typeof i === 'number'? board.getCard(i) : i;
-        if(this.isEnd()) return false;
-        if(this._path.some(j => j === c.index)) return false;
+    select(heist: Heist, i: Card| number): Undo | null {
+        if(this.isEnd()) return null;
+        const c = typeof i === 'number'? heist.getCard(i) : i;
+        if(this._path.some(j => j === c._index)) return null;
 
         const p = this;
         const d = p._diff;
         
-        p._path.push(c.index);
-        const u = c.select(board);
-        if(this.diffMask.some(j => j === c.index)) p._diff++;
+        p._path.push(c._index);
+        const u = c.select(heist);
+        if(this.diffMask.some(j => j === c._index)) p._diff++;
 
         return () => {
             p._path.pop();
@@ -78,6 +78,6 @@ class PathImpl implements Path {
     }
 }
 
-export default function createPath(board: Board): Path {
-    return new PathImpl(board);
+export default function createPath(heist: Heist): Path {
+    return new PathImpl(heist);
 }

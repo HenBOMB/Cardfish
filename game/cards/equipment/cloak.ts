@@ -1,32 +1,25 @@
-import { CardImpl } from '../card';
-import { Board, Equipment, Undo, Card } from '../../types';
+import { Heist, Undo, Card } from '../../types';
+import { Equipment } from '../types';
 
-export class ClokImpl extends CardImpl implements Equipment {
-    private _value: number;
+export default class Cloak extends Equipment {
 
-    constructor(value: number) {
-        super('cloak');
-        this._value  = value;
+    constructor(value: number, level?: number) {
+        super('cloak', value, level);
     }
 
-    is(type: string): boolean {
-        return super.is(type) || type === 'equipmentq';
-	}
-
-    getValue(board: Board): number {
-        return this._value;
-    }
-
-    equip(board: Board, card: Card): Undo {
-        const value = this;
-        const u = card.setValue(card.getValue(board) + value);
+    override use(heist: Heist, thief: Card | number): Undo | null {
+        thief = typeof thief === 'number' ? heist.getCard(thief) : thief;
+        if(!this._value || !thief.is('thief')) return null;
+        
+        const cloak = this;
+        const value = cloak.getValue();
+        const undo = thief.setValue(thief.getValue(heist) + value);
+        cloak._value = 0;
 
         return () => {
-            u();
+            undo();
+            cloak._value = value;
         }
     }
-}
-
-export default function Door(lockDir: number): Card {
-    return new DoorImpl(lockDir);
+    
 }

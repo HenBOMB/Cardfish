@@ -1,22 +1,8 @@
+import { Equipment } from "./cards/types";
+
 export type Undo = () => void;
 
 export interface Heist {
-    thief: Thief;
-    board: Board;
-    
-    /**
-     * Plays a specified path of actions.
-     * @param path - An array of numbers representing the sequence of actions to be played.
-     */
-    play: (path: number[]) => void;
-
-    /**
-     * Undoes the last action performed.
-     */
-    undo: () => void;
-}
-
-export interface Board {
     thief: Thief;
 
     path: Path;
@@ -31,12 +17,16 @@ export interface Board {
      */
     deal: () => void;
 
+    play: (path: number[], other?: number[]) => void;
+
     /**
      * Retrieves a card from the current hand using its index.
      * @param i - The index of the card to retrieve.
      * @returns The card at the specified index.
      */
     getCard: (i: number) => Card;
+
+    getEquipment(i: number): Equipment;
 
     /**
      * Sets a card in the current hand using its index.
@@ -52,6 +42,12 @@ export interface Board {
      */
     getCards: () => Card[];
     
+    /**
+     * Sets the current deck of cards.
+     * @param deck - An array of Card objects representing the new deck.
+     */
+    setDeck: (deck: Card[]) => void;
+
     /**
      * Retrieves the entire current deck of cards.
      * @returns An array containing all the cards in the current deck.
@@ -70,48 +66,46 @@ export interface Path {
     isIn(index: number): boolean;
     getDiff: () => number;
     getPath: () => number[];
-    getLast: (board: Board) => Card;
+    getLast: (heist: Heist) => Card;
     getInitStealth: () => number;
     getState: () => [number[], number, number];
-    select: (board: Board, i: Card | number) => Undo | false;
+    select: (heist: Heist, i: Card | number) => Undo | null;
 }
 
 // ? CARD TYPES
 
 export interface Card {
-    getValue(board: Board): number;
+    getValue(heist?: Heist): number;
     id: string;
-    index: number;
+    _index: number;
 
     is(type: Card | string): boolean;
-    isLit(board: Board): boolean;
-    isWatched(board: Board): boolean;
-    isSelectable(board: Board): boolean;
-    select(board: Board): Undo;
-	getValue(board: Board): number;
+    isLit(heist: Heist): boolean;
+    isWatched(heist: Heist): boolean;
+    isSelectable(heist: Heist): boolean;
+    select(heist: Heist): Undo;
+	getValue(heist: Heist): number;
 	setValue(value: number): Undo;
     getModifier(key: string): number;
     setModifier(key: string, value: number): Undo;
 }
 
+// TODO Move to ./cards/types.ts
+
 export interface Thief extends Card {
     isCaught(): boolean;
+    isEscaped(): boolean;
     setCaught(): Undo;
-    getStealth(): number;
-    setStealth(stealth: number): Undo;
-    getTreasures(): number;
-    setTreasures(treasures: number): Undo;
+    setEscape(): Undo;
+    getScore(): number;
+    setScore(treasures: number): Undo;
 }
 
 export interface Guard extends Card {
     isNocturnal(): boolean;
-    isBackside(board: Board, card: Card): boolean;
-    isFacing(board: Board, card: Card): boolean;
+    isBackside(heist: Heist, card: Card): boolean;
+    isFacing(heist: Heist, card: Card): boolean;
     setLook(card: Card): Undo;
-}
-
-export interface Equipment extends Card {
-
 }
 
 export interface Obstacle extends Card {

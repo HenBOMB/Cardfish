@@ -1,6 +1,9 @@
 
 import readlineSync from 'readline-sync';
-import { Heist, Undo } from './game/types';
+import evaluate from './heistotron/evaluator';
+import { deepClone } from './heistotron/bestPath';
+import { Heist } from './game/types';
+import createPath from './game/path';
 // import readline from 'readline';
 
 // const rl = readline.createInterface({
@@ -21,11 +24,12 @@ type State = {
     diff: number;
     stealth: number;
     treasures: number;
+    score: number;
     cards: { 
         id: string, 
-        index: number, 
         value: number, 
-        selectable: boolean 
+        selectable: boolean,
+        selected: boolean 
     }[];
 };
 
@@ -33,63 +37,92 @@ export default function Debug (
     heist: Heist, 
     state: [number[], number, number, number]
 ): void {
-    const [ path, iS, iT ] = state;
-    const board = heist.board;
+    heist = deepClone(heist);
+    const [ path, fS, fT, fSc ] = state;
+
+    const iSc = evaluate(heist);
+    const iS = heist.thief.getValue();
+    const iT = heist.thief.getScore();
 
     // ! Cache all states
-    const states: State[] = [];
-    const undos: Undo[] = [];
-    const vals: { [key: string]: number } = { };
+    
+    let vals: { [key: string]: number } = { };
+    let prev = -1;
 
-    for (let i = 0; i < path.length; i++) {
+    const states: State[] = Array(path.length).fill(null).map((_, i) => {
         const index = path[i];
-        const card = board.getCard(index);
 
-        vals[index] = card.getValue(board);
+        if(prev === index)
+        {
+            // ? TODO: We must deal the same rng cards we used before to find this path.
+			// clone.setDeck([]);
+
+            if(heist.path.isEnd()) 
+            {
+                heist.thief.setValue(heist.thief.getValue() < 10? 10 : heist.thief.getValue());
+            }
+
+            const path = heist.path.getPath();
+
+            path.forEach(i => heist.setCard(i));
+
+            heist.setCard(heist.thief._index);
+            heist.thief._index = path[path.length-1];
+            heist.setCard(heist.thief._index, heist.thief);
+
+            heist.path = createPath(heist);
+            heist.deal();
+            vals = {};
+        }
+
+        prev = index;
+
+        const card = heist.getCard(index);
+
+        vals[index] = card.getValue(heist);
       
-        const undo = board.path.select(board, card);
+        heist.path.select(heist, card);
         
-        if(undo) undos.push(undo);
-
-        const diff = board.path.getDiff();
-        const stealth = heist.thief.getStealth();
-        const treasures = heist.thief.getTreasures();
+        const score = evaluate(heist);
+        const diff = heist.path.getDiff();
+        const stealth = heist.thief.getValue();
+        const treasures = heist.thief.getScore();
         const cards = Array(9).fill(null).map((e, i) => {
-            const card = board.getCard(i);
+            const card = heist.getCard(i);
             return {
-                index: i,
                 id: card.id,
-                value: vals[i] || card.getValue(board),
-                selectable: vals[i]? false : card.isSelectable(board),
+                value: vals[i] || card.getValue(heist),
+                selectable: vals[i]? false : card.isSelectable(heist),
+                selected: heist.path.getPath().includes(i)
             };
         });
 
-        states.push({ index, diff, stealth, treasures, cards });
-    }
-
-    undos.forEach(u => u());
-
+        return { index, score, diff, stealth, treasures, cards };
+    });
+    
     // ! Play with full control
 
     for (let i = 0; i < states.length;) 
     {
-        const { index, diff, stealth, treasures, cards } = states[i];
+        const { score, diff, stealth, treasures, cards } = states[i];
         
         console.clear();
-        console.log(`Path ${path.map(h => h===index? `(${h})` : h).join(' > ')}`);
+        console.log(`Path ${path.map((h, j) => i===j? `(${h})` : h).join(' > ')}`);
 
-        // const sDiff = stealth - (states[i-1]?.stealth || 0);
-        // states.slice(0,i).reduce((a, b) => a + b.stealth, 0);
-        //const tDiff = treasures - (states[i-1]?.treasures || treasures);
-        const tSum = '';//!tDiff? '' : `(${tDiff > 0? '+' + tDiff : '-' + Math.abs(tDiff)})`;
-        console.log(`Stealth: ${stealth}/${path.length===9? iS < 10? 10 : iS : iS} | Treasures: ${treasures}/${iT} ${tSum}\nDifficulty: ${diff}\n`);
-        
-        const _cards = cards.map(({ id, index, value, selectable }) => {
+        const dSc = Math.round((score - iSc)*100)/100;
+        const dS = stealth - iS;
+        const dT = treasures - iT;
+        // console.log(`Stealth: ${stealth}/${path.length===9? fS < 10? 10 : fS : fS} | Treasures: (${dT > 0? '+' : '-'}${dT})`);
+        console.log(`\nStealth: ${fS} (${dS > 0? '+' : ''}${dS}) | Treasures: ${fT} (${dT > 0? '+' : ''}${dT})`);
+        console.log(`Difficulty: ${diff}`);
+        console.log(`Score: ${Math.round(score*100)/100} (${dSc > 0? '+' : ''}${dSc}/${fSc})\n`);
+
+        const _cards = cards.map(({ id, value, selectable, selected }) => {
             if(id === 'thief') 
             {
-                return `${id}\t`;
+                return `${id} {${stealth}, ${treasures}}`;
             }
-            return `${id[0].toUpperCase() + id.slice(1, 5)} ${(path.slice(0,i+1).includes(index)? '{v}' : (selectable? '(v)' : `[v]`)).replace('v', value as any)}`;
+            return `${id[0].toUpperCase() + id.slice(1, 5)} ${(selected? '<v>' : (selectable? '(v)' : `[v]`)).replace('v', value as any)}`;
         });
 
         console.log(_cards.slice(0,3).join('\t'));
@@ -128,3 +161,8 @@ export default function Debug (
 
     console.log('Debugger has ended.');
 };
+
+function logState(state: State)
+{
+
+}

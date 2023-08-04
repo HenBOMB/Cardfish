@@ -1,12 +1,17 @@
-import { CardImpl } from './card';
-import { Board, Undo, Card } from '../types';
+import { Heist, Undo } from '../types';
+import { Lockable } from './types';
 
-export class ExitImpl extends CardImpl implements Card {
-    constructor() {
-        super('exit');
+export default class Door extends Lockable {
+
+    constructor(lockDir: number) {
+        super('exit', lockDir);
     }
-}
 
-export default function Exit(): Card {
-    return new ExitImpl();
+    select(heist: Heist): Undo {
+        const undo = heist.thief.setEscape();
+
+        return () => {
+            undo();
+        }
+    }
 }

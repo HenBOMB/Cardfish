@@ -1,127 +1,173 @@
-import { createBoard } from './board';
-import { createThief } from './cards/thief';
+import { Heist, Card, Path, Thief, Undo, Guard as tGuard } from './types';
+import { Torch, Empty, Guard } from './cards/all';
 import createPath from './path';
-import { Heist, Card, Undo, Thief, Board, Path } from './types';
+import { Equipment } from './cards/types';
+import { createThief } from './cards/thief';
 
-class HeistImpl implements Heist {
+export class HeistImpl implements Heist {
     thief: Thief;
-    board: Board;
+    path: Path;
     
-    private _undos: (() => void)[];
-    
-    constructor(i: number, deck: Card[]) {
-        this._undos = [];
-        this.thief = createThief(i);
-        this.board = createBoard(this.thief, deck);
-        this.board.deal();
-        this.thief.select(this.board);
+    private _cards: Card[];
+    private _deck: Card[];
+    private _equipment: Equipment[];
+
+    constructor(index: number, equipment: Equipment[], deck: Card[]) {
+
+        this.thief = createThief(index);
+        this._equipment = equipment;
+        this._cards = Array<Card>(9).fill(Empty());
+        this._deck = [...deck];
+        this._cards[index] = this.thief;
+        this.path = createPath(this);
+        this.thief.select(this);
+        this.deal();
     }
 
-    // ? Getting rid of card costs stealth points.
+    getCard(i: number): Card {
+        return this._cards[i];
+    }
 
-    /** THE PATH
-     * For every card in your path that is not adjacent to your Thief, the path diff increases by 1.
-     * A card that increases the path diff has a little arrow icon ^.
-     * All card values are multiplied with the current path diff.
-     * stealth > 0 = invisible
-     */
+    setCard(i: number, card: Card = Empty()): Undo {
+        const heist = this;
+        const c = heist._cards[i];
+        heist._cards[i] = card;
+        return () => {
+            heist._cards[i] = c;
+        }
+    }
 
-    // TODO
+    getCards(): Card[] {
+        return this._cards.filter(c => c.id !== 'empty' && c.isSelectable(this));
+    }
 
-    /** SNEAK
-     * Gets multiplied if it can increase.
-     * Returns stealth points.
-     */
+    setDeck(deck: Card[]): void {
+        this._deck = deck;
+    }
 
-    /** HIDE
-     * Hide cards restore your stealth to 10 points.
-     * In order to hide you have to end your path on the hide card.
-     */
+    getDeck(): Card[] {
+        return this._deck;
+    }
 
-    /** LIGHT
-     * Torches illuminate cards next to them and influence their value.
-     * Illuminated enemies become stronger (+1) and hide cards become useless.
-     */
+    getEquipment(i: number): Equipment {
+        i = i < 0? i + 3 : i;
+        return this._equipment[i];
+    }
 
-    /** GUARDS
-     * If they see you and you have 0 stealth points left they will capture you!
-     * Obstacles like torches or doors can not capture you even if your stealth has run out.
-     * A guard's facing direction is indicated by the view cone icon on its border.
-     * The opposite side of a guards facing direction is it's backside.
-     * If you approach a guard in the shadow from his backside, you don't have to spend any stealth points. Gives you treasure instead.
-     * Cards that are watched by a guard have an eye icon on their bottom.
-     * If you select a card that was watched by a guard, the guard is alerted (!) and gets +1 permanently.
-     * Selecting an illuminated adjacent card makes a guard suspicious (?) and turns him into that card's direction.
-     * If a guard's value is higher than your remaining stealth points, he will capture you.
-     * When you deselect cards, guards will restore their initial state.
-     */
+    getAdj(card: Card): Card[] {
+        const MAP = [
+            [1, 3, 4],
+            [0, 2, 3, 4, 5],
+            [1, 4, 5],
+            [0, 1, 4, 6, 7],
+            [0, 1, 2, 3, 5, 6, 7, 8],
+            [1, 2, 4, 7, 8],
+            [3, 4, 7],
+            [3, 4, 5, 6, 8],
+            [4, 5, 7],
+        ];
+        if(card._index < 0) console.log(card.id);
+        return MAP[card._index].map(i => this.getCard(i)).filter(c => c.isSelectable(this));
+    }
 
-    /** EQUIPMENT
-     * Each heist you can take equipment cards with you. (3)
-     * Your inventory can hold up to 3 cards.
-     * Equipment cards are used before you start your path.
-     */
+    getPerp(card: Card): Card[] {
+        const MAP = [
+            [1, 3],
+            [0, 2, 4],
+            [1, 5],
+            [0, 4, 6],
+            [1, 3, 5, 7],
+            [2, 4, 8],
+            [3, 7],
+            [4, 6, 8],
+            [5, 7],
+        ];
+        return MAP[card._index].map(i => this.getCard(i)).filter(c => c.isSelectable(this));
+    }
 
-    /** TREASURES
-     * The total amount of treasure stolen is the game's highscore.
-     * Each castle deck has a limited amount of treasure cards.
-     * To pickpocket guards they have to be standing in the shadow.
-     */
+    getGuards(exclude: number = -1): tGuard[] {
+        return this.getCards()
+            .filter((c: Card) => c.is('guard') && c._index !== exclude)
+            .map((c: Card) => c as tGuard);
+    }
 
-    /** CHESTS
-     * Finally, each gameyou have to steal the castles chest card.
-     * You find the chest card when half the deck is dealt.
-     * You need a free inventory slot to carry the chest out of the castle.
-     * Chests will become more valuable the longer they stay on the board.
-     * After a turn their value will increase by +1 and the potential for better opened loot will increase.
-     * Picking up a chest will also grant you a treasure bonus.
-     * The chest bonus equals the current chest value multiplied by the path difficulty.
-     */
-    
-    /** NOTES
-     * If your thief stands in the shadow and has 0 stealth points left she can avoid enemies.
-     * When you have 0 stealth points, you will sneak past shadowed enemies without removing them from the board.
-     * Shadow stepping an enemy will cost you stealth points.
-     * 
-     * CONTRACTS (my acc)
-     * Clearing the board will increase cards in your inventory by +1. (unlocked)
-     * Stealth and treasure are the same. (unlocked)
-     * At 1 or less stealth treasure are worth double. (locked)
-     */
-
-	equip(slot: 0 | 1 | 2, card: Card): void {
-		// TODO
-	}
-	
-    play(path: number[]): void {
+    play(path: number[], other?: number[]): void {
         if(this.thief.isCaught()) 
 		{
             return;
         }
 
-        this.board.path = createPath(this.board);
+        const eCards = path.filter(i=>i<0);
 
-        path.forEach(i => this.board.path.select(this.board, i));
-
-        if(this.board.path.isEnd()) 
-		{
-            this.thief.setStealth(this.thief.getStealth() < 10? 10 : this.thief.getStealth());
+        if (eCards.length)
+        {
+            if(eCards.length !== other?.length) return;
+            eCards.forEach((i, j) => this.getEquipment(i).use(this, other![j]));
+            path = path.slice(eCards.length);
         }
 
-        path.forEach(i => this.board.setCard(i));
+        if(!path.length) return;
+        
+        this.path = createPath(this);
 
-        this.board.setCard(this.thief.index);
-        this.board.setCard(path[path.length-1], this.thief);
+        path.forEach(i => this.path.select(this, i));
 
-        this.board.path = createPath(this.board);
-        this.board.deal();
+        if(this.path.isEnd()) 
+		{
+            this.thief.setValue(this.thief.getValue() < 10? 10 : this.thief.getValue());
+        }
+
+        path.forEach(i => this.setCard(i));
+
+        this.setCard(this.thief._index);
+        this.thief._index = path[path.length-1];
+        this.setCard(this.thief._index, this.thief);
+
+        this.path = createPath(this);
+        this.deal();
     }
-    
-    undo(): void {
-        this._undos.length && this._undos.shift()!();
+
+    shuffle(): void {
+        this._deck = this._deck.sort(() => Math.random() - 0.5);
+    }
+
+    deal(): void {
+        // TODO
+        /**
+         * Trigger all cards passive.
+         * Some cards move on their own.
+         */
+
+        // TODO move cards
+        // Guards don't move
+        
+        const drop = () => {
+            for (let i = 5; i > 0; i--)
+            {
+                const c = this._cards[i];
+                if(c.is('empty') || c.is('thief') || c.is('guard')) continue;
+                const g = this._cards[i+3];
+                if(!g.is('empty')) continue;
+                this._cards[i] = g;
+                this._cards[i+3] = c;
+            }
+        }
+        // ? Why 2 times? Because the top cards may have to drop twice to reach the bottom.
+        drop();
+        drop();
+
+        // ? deal the cards
+        
+        this._cards = this._cards.map((c, i) => {
+            c._index = i;
+            if(!c.is('empty')) return c; 
+            const card = this._deck.shift() || (Math.random() > 0.5? Guard(Math.floor(Math.random()*4) as any) : Torch());
+            card._index = i;
+            return card;
+        });
     }
 }
 
-export function createHeist(i: number, deck: Card[]): Heist {
-    return new HeistImpl(i, deck);
+export function createHeist(index: number, equipment: Equipment[], deck: Card[]): Heist {
+    return new HeistImpl(index, equipment, deck);
 }

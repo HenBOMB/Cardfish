@@ -1,12 +1,8 @@
 import { CardImpl } from './card';
-import { Board, Card, Undo } from '../types';
+import { Card } from '../types';
 
-export class EmptyImpl extends CardImpl implements Card {
+export default class Empty extends CardImpl implements Card {
     constructor() {
         super('empty');
     }
-}
-
-export default function Empty(): Card {
-    return new EmptyImpl();
 }

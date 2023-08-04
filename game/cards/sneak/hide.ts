@@ -1,11 +1,7 @@
 import { CardImpl } from '../card';
-import { Board, Card, Undo } from '../../types';
+import { Heist, Card, Undo } from '../../types';
 
-export interface HideInt extends Card {
-
-}
-
-export class HideImpl extends CardImpl implements HideInt {
+export default class Hide extends CardImpl {
 
     constructor() {
         super('hide');
@@ -15,23 +11,26 @@ export class HideImpl extends CardImpl implements HideInt {
         return super.is(type) || type === 'sneak';
     }
 
-    getValue(board: Board): number {
-        return this.isLit(board)? 0: 10;
+    getValue(heist: Heist): number {
+        return this.isLit(heist)? 0: 10;
     }
 
-    select(board: Board): Undo {
-        const s = board.thief.getStealth();
-        const u = super.select(board);
-        // TODO Only if you end your path on a hide card.
-        return u;
-        const uu = board.thief.setStealth(this.isLit(board)? s : s < 10? 10 : s);
-        return () => {
-            u();
-            uu();
+    select(heist: Heist): Undo {
+        return super.select(heist);
+        
+        const value = this.getValue(heist);
+
+        if(!value)
+        {
+            return super.select(heist);
         }
-    }
-}
 
-export default function Hide(): HideInt {
-    return new HideImpl();
+		const uu = heist.thief.setValue(heist.thief.getValue() + value);
+		const u = super.select(heist);
+
+		return () => {
+			u();
+			uu();
+		}
+	}
 }
