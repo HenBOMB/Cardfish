@@ -40,8 +40,10 @@ export interface Heist {
      * Retrieves all the cards from the hand.
      * @returns An array of Card objects representing the used deck.
      */
-    getCards: () => Card[];
+    getCards: (all?: boolean) => Card[];
     
+    genCards: (count: number) => Card[];
+
     /**
      * Sets the current deck of cards.
      * @param deck - An array of Card objects representing the new deck.

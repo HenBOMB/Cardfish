@@ -81,7 +81,7 @@ heist.setDeck([
 
 heist.play([7, 6, 3, 0]);
 
-var state: any = bestPath(heist, 1);
+var state: any = bestPath(heist, 0);
 //console.log(state);
 
 Debug(heist, state as any);

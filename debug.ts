@@ -1,7 +1,7 @@
 
 import readlineSync from 'readline-sync';
 import evaluate from './heistotron/evaluator';
-import { deepClone } from './heistotron/bestPath';
+import { Output, deepClone } from './heistotron/bestPath';
 import { Heist } from './game/types';
 import createPath from './game/path';
 // import readline from 'readline';
@@ -35,10 +35,11 @@ type State = {
 
 export default function Debug (
     heist: Heist, 
-    state: [number[], number, number, number]
+    state: Output
 ): void {
     heist = deepClone(heist);
-    const [ path, fS, fT, fSc ] = state;
+    const [ fSc, fState ] = state;
+    const [ path, fS, fT ] = fState;
 
     const iSc = evaluate(heist);
     const iS = heist.thief.getValue();

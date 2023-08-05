@@ -1,11 +1,12 @@
 import createPath from "../game/path";
-import {Heist, Undo } from "../game/types";
+import { Heist, Undo } from "../game/types";
 import evaluate from "./evaluator";
 import generateMoves from "./generator";
 
 export var count = 0;
 
-type State = [number[], number, number, number?];
+type State = [number[], number, number];
+export type Output = [number, State];
 
 export function deepClone<T>(obj: T, cache = new WeakMap()): T {
     // Handle non-object types and primitives
@@ -45,7 +46,7 @@ export function deepClone<T>(obj: T, cache = new WeakMap()): T {
     return cloneObject;
 }
 
-function dfsWithBacktracking(heist: Heist, depth = 1, base?: boolean): [number, State | null] {
+function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Output {
     const generated = generateMoves(heist);
 
     if (heist.path.isEnd() || !generated.length) {
@@ -53,7 +54,7 @@ function dfsWithBacktracking(heist: Heist, depth = 1, base?: boolean): [number, 
     }
     
     let _score = Number.NEGATIVE_INFINITY, 
-        _state: State | null = null;
+        _state: State;
 
     for (let i = 0; i < generated.length; i++) {
 		if(base) console.log(`\nGenerating... ${i+1}/${generated.length}`);
@@ -77,14 +78,14 @@ function dfsWithBacktracking(heist: Heist, depth = 1, base?: boolean): [number, 
 
 	if(depth > 0 && heist.path.getPath().length > 2)
     {
-		const pScore = evaluate(heist);
-
-		const [score, state] = Array(3).fill(null).map<[number, State]>(() => {
+		const [score, state] = Array(3).fill(null).map<Output>(() => {
 			// ? Clone the entire object
 			const clone = deepClone<Heist>(heist);
 
 			// ? We must deal rng cards, not cards in the current deck
-			clone.setDeck([]);
+      		clone.setDeck(clone.genCards(clone.path.getPath().length));
+
+			const copy = deepClone<Heist>(heist);
 
 			// ? Play the path on the clone
 			clone.play(clone.path.getPath());
@@ -101,7 +102,7 @@ function dfsWithBacktracking(heist: Heist, depth = 1, base?: boolean): [number, 
 			return [sc, st!];
 		}).sort((a: any, b: any) => b[0] - a[0])[0];
 
-		if(score > _score && score > pScore && score > 0)
+		if(score > _score && score > 0)
 		{
 			state![0] = [...heist.path.getPath(), ...state![0]];
 			_score = score;
@@ -109,14 +110,14 @@ function dfsWithBacktracking(heist: Heist, depth = 1, base?: boolean): [number, 
 		}
     }
     
-    return [_score, _state];
+    return [_score, _state!];
 }
 
-export default function bestPath(heist: Heist, depth: number = 1): State {
+export default function bestPath(heist: Heist, depth: number = 1): Output {
     count = 0;
     heist.path = createPath(heist);
 
     const [ score, state ] = dfsWithBacktracking(heist, depth, true);
 
-    return [state![0], state![1], state![2], score];
+    return [score, state];
 }
