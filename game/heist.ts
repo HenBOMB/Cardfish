@@ -25,9 +25,7 @@ export class HeistImpl implements Heist {
     }
 
     getCard(i: number): Card {
-		const card = this._cards[i] || (Math.random() > 0.5? Guard(Math.floor(Math.random()*4) as any) : Torch());
-        card._index = i;
-        return card;
+        return this._cards[i];
     }
 
     setCard(i: number, card: Card = Empty()): Undo {
@@ -39,8 +37,8 @@ export class HeistImpl implements Heist {
         }
     }
 
-    getCards(all?: boolean): Card[] {
-        return this._cards.filter(c => all || c.id !== 'empty' && c.isSelectable(this));
+    getCards(): Card[] {
+        return this._cards.filter(c => c.id !== 'empty' && c.isSelectable(this));
     }
 
     setDeck(deck: Card[]): void {
@@ -86,10 +84,6 @@ export class HeistImpl implements Heist {
         ];
         return MAP[card._index].map(i => this.getCard(i)).filter(c => c.isSelectable(this));
     }
-
-	genCards(count: number): Card[] {
-		return Array(count).fill(null).map(_ => this.getCard(9))
-	}
 
     getGuards(exclude: number = -1): tGuard[] {
         return this.getCards()
@@ -167,7 +161,7 @@ export class HeistImpl implements Heist {
         this._cards = this._cards.map((c, i) => {
             c._index = i;
             if(!c.is('empty')) return c; 
-            const card = this._deck.shift() || this.getCard(9);
+            const card = this._deck.shift() || (Math.random() > 0.5? Guard(Math.floor(Math.random()*4) as any) : Torch());
             card._index = i;
             return card;
         });

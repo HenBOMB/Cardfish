@@ -19,8 +19,6 @@ export interface Heist {
 
     play: (path: number[], other?: number[]) => void;
 
-	genCards(count: number): Card[];
-	
     /**
      * Retrieves a card from the current hand using its index.
      * @param i - The index of the card to retrieve.
@@ -42,7 +40,7 @@ export interface Heist {
      * Retrieves all the cards from the hand.
      * @returns An array of Card objects representing the used deck.
      */
-    getCards: (all?: boolean) => Card[];
+    getCards: () => Card[];
     
     /**
      * Sets the current deck of cards.
