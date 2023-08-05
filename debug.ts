@@ -1,7 +1,7 @@
 
 import readlineSync from 'readline-sync';
 import evaluate from './heistotron/evaluator';
-import { deepClone } from './heistotron/bestPath';
+import { deepClone, State as Output } from './heistotron/bestPath';
 import { Heist } from './game/types';
 import createPath from './game/path';
 // import readline from 'readline';
@@ -35,75 +35,61 @@ type State = {
 
 export default function Debug (
     heist: Heist, 
-    state: [number[], number, number, number]
+    state: Output
 ): void {
     heist = deepClone(heist);
-    const [ path, fS, fT, fSc ] = state;
+    const [ fSc, paths, heists ] = state;
 
     const iSc = evaluate(heist);
     const iS = heist.thief.getValue();
     const iT = heist.thief.getScore();
 
+	const fH = heists.pop()!;
+	const fS = fH.thief.getValue();
+    const fT = fH.thief.getScore();
+	
+	heists.push(fH);
+	
     // ! Cache all states
-    
-    let vals: { [key: string]: number } = { };
-    let prev = -1;
 
-    const states: State[] = Array(path.length).fill(null).map((_, i) => {
-        const index = path[i];
+	// Argument of type 'any[]' is not assignable to parameter of type '(previousValue: State, currentValue: State[], currentIndex: number, array: State[][]) => State'.
+    // Type 'any[]' provides no match for the signature '(previousValue: State, currentValue: State[], currentIndex: number, array: State[][]): State'.
+    const statess: State[][] = paths.map<State[]>((path, h) => {
+		const vals: { [key: string]: number } = { };
+		const heist = heists[h];
+		
+		return path.map(index => {
+			const card = heist.getCard(index);
+	
+			vals[index] = card.getValue(heist);
+		  
+			heist.path.select(heist, card);
+			
+			const score = evaluate(heist);
+			const diff = heist.path.getDiff();
+			const stealth = heist.thief.getValue();
+			const treasures = heist.thief.getScore();
+			const cards = heist.getCards(true).map(card => {
+				const index = card._index;
+				return {
+					id: card.id,
+					value: vals[index] || card.getValue(heist),
+					selectable: vals[index]? false : card.isSelectable(heist),
+					selected: heist.path.getPath().includes(index)
+				};
+			});
 
-        if(prev === index)
-        {
-            // ? TODO: We must deal the same rng cards we used before to find this path.
-			// clone.setDeck([]);
-
-            if(heist.path.isEnd()) 
-            {
-                heist.thief.setValue(heist.thief.getValue() < 10? 10 : heist.thief.getValue());
-            }
-
-            const path = heist.path.getPath();
-
-            path.forEach(i => heist.setCard(i));
-
-            heist.setCard(heist.thief._index);
-            heist.thief._index = path[path.length-1];
-            heist.setCard(heist.thief._index, heist.thief);
-
-            heist.path = createPath(heist);
-            heist.deal();
-            vals = {};
-        }
-
-        prev = index;
-
-        const card = heist.getCard(index);
-
-        vals[index] = card.getValue(heist);
-      
-        heist.path.select(heist, card);
-        
-        const score = evaluate(heist);
-        const diff = heist.path.getDiff();
-        const stealth = heist.thief.getValue();
-        const treasures = heist.thief.getScore();
-        const cards = Array(9).fill(null).map((e, i) => {
-            const card = heist.getCard(i);
-            return {
-                id: card.id,
-                value: vals[i] || card.getValue(heist),
-                selectable: vals[i]? false : card.isSelectable(heist),
-                selected: heist.path.getPath().includes(i)
-            };
-        });
-
-        return { index, score, diff, stealth, treasures, cards };
-    });
+			return { index, score, diff, stealth, treasures, cards };
+		    })
+		});
     
     // ! Play with full control
 
+	const states = statess[0];
+	
     for (let i = 0; i < states.length;) 
     {
+		const path = paths[0];
         const { score, diff, stealth, treasures, cards } = states[i];
         
         console.clear();

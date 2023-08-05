@@ -62,7 +62,6 @@ Score: 21.25 (0)
 /*
 */
 
-console.log('Waiting...');
 // var state: any = bestPath(heist, 2);
 // const state = [
 //   [
