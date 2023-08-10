@@ -138,16 +138,7 @@ export class HeistImpl implements Heist {
     }
 
     deal(): void {
-        // TODO
-        /**
-         * Trigger all cards passive.
-         * Some cards move on their own.
-         */
-
-        // TODO move cards
-        // Guards don't move
-        
-        const drop = () => {
+        const drop = (b?: boolean) => {
             for (let i = 5; i > 0; i--)
             {
                 const c = this._cards[i];
@@ -156,13 +147,31 @@ export class HeistImpl implements Heist {
                 if(!g.is('empty')) continue;
                 this._cards[i] = g;
                 this._cards[i+3] = c;
+                g._index = i;
+                c._index = i+3;
             }
+            if(b) return;
+            drop(true);
         }
-        // ? Why 2 times? Because the top cards may have to drop twice to reach the bottom.
+        
         drop();
-        drop();
+        
+        // ! Move guards in their direction if possible.
 
-        // ? deal the cards
+		for (let i = 0; i < 9; i++)
+		{
+			const c = this._cards[i];
+		
+			if (c.is('guard'))
+			{
+				const f = (c as Guard).getFacing(this);
+				if (!f || !f.is('empty')) continue;
+				this._cards[i] = f;
+				this._cards[f._index] = c;
+			}
+		}
+		
+        // ! Deal the cards
         
         this._cards = this._cards.map((c, i) => {
             c._index = i;

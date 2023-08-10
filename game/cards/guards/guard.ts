@@ -1,110 +1,111 @@
 import { Heist, Card, Guard, Undo } from '../../types';
 import { CardImpl } from '../card';
 
-const KDI: { [key: string]: number } = {
-    '-3': 0,
-    '1': 1,
-    '3': 2,
-    '-1': 3
+const KDI: {
+	[key: string]: number } = {
+	'-3': 0,
+	'1': 1,
+	'3': 2,
+	'-1': 3
 };
 
 class GuardImpl extends CardImpl implements Guard {
-    
-    // ? 0, 1, 2, 3
-    private lookDir: number;
+
+	// ? 0, 1, 2, 3
+	private lookDir: number;
 	private value: number;
-    
-    constructor(lookDir: number, value: number) {
-        super('guard');
-        this.lookDir = lookDir;
-        this.value = value;
-    }
-    
-    is(type: string): boolean {
-        return super.is(type);
-    }
 
-    isNocturnal(): boolean {
-        return false;
-    }
+	constructor(lookDir: number, value: number) {
+		super('guard');
+		this.lookDir = lookDir;
+		this.value = value;
+	}
 
-    isFacing(heist: Heist, card: Card): boolean {
-        const i = this._index + [-3, 1, 3, -1][this.lookDir];
-        const facing = i < 0 || i > 8? null : heist.getCard(i);
-        return facing?.is(card) ?? false;
-    }
+	is(type: string): boolean {
+		return super.is(type);
+	}
 
-    isBackside(heist: Heist, card: Card): boolean {
-        const i = this._index + [3, -1, -3, 1][this.lookDir];
-        return heist.getCard(i)?.is(card) ?? false;
-    }
+	isNocturnal(): boolean {
+		return false;
+	}
 
-    getValue(heist: Heist): number {
-        const value = (
-            this.value + 
-            (this.isLit(heist)? 1 : 0) + 
-            (this.isWatched(heist)? 1 : 0) + 
-            this.getModifier('alert') +
-            this.getModifier('intruder')
-        ) * heist.path.getDiff();
-        return value;
-    }
+	isFacing(heist: Heist, card: Card): boolean {
+		return card.is(this.getFacing(heist));
+	}
 
-    setLook(card: Card): Undo {
-        const guard = this;
-        const old = guard.lookDir;
-        const s = card._index - guard._index;
-        guard.lookDir = KDI[s];
-        return () => {
-            guard.lookDir = old;
-        }
-    }
+	isBackside(heist: Heist, card: Card): boolean {
+		const i = this._index + [3, -1, -3, 1][this.lookDir];
+		return heist.getCard(i)?.is(card) ?? false;
+	}
 
-    select(heist: Heist): Undo {
-        const cost = this.getValue(heist);
-        const undos = [super.select(heist)];
+	getValue(heist: Heist): number {
+		const value = (
+			this.value +
+			(this.isLit(heist) ? 1 : 0) +
+			(this.isWatched(heist) ? 1 : 0) +
+			this.getModifier('alert') +
+			this.getModifier('intruder')
+		) * heist.path.getDiff();
+		return value;
+	}
 
-        // ? If a guard's value is higher than your remaining stealth points, he will capture you.
-        if(cost > heist.thief.getValue()) {
-            undos.push(heist.thief.setCaught());
-            undos.push(heist.thief.setValue(heist.thief.getValue() - cost));
-            return () => {
-                undos.forEach(undo => undo());
-            }
-        }
+	getFacing(heist: Heist): Card | null {
+		const i = this._index + [-3, 1, 3, -1][this.lookDir];
+		const facing = i < 0 || i > 8 ? null : heist.getCard(i);
+		return facing;
+	}
 
-        const last = heist.getCard(heist.path.getPath()[heist.path.getPath().length - 2]!);
+	setLook(card: Card): Undo {
+		const guard = this;
+		const old = guard.lookDir;
+		const s = card._index - guard._index;
+		guard.lookDir = KDI[s];
+		return () => {
+			guard.lookDir = old;
+		}
+	}
 
-        if(this.isLit(heist))
-        {
-            // ? If you approach a guard from his front, all other guards get +1 permanently.
-            
-            if(this.isFacing(heist, last)) {
-                undos.push(...heist.getGuards(this._index).map(g => g.setModifier('intruder', 1)));
-            }
+	select(heist: Heist): Undo {
+		const cost = this.getValue(heist);
+		const undos = [super.select(heist)];
+		const last = heist.getCard(heist.path.getPath()[heist.path.getPath().length - 2] !);
+		
+		if (this.isLit(heist))
+		{
+			// ? If you approach a guard from his front, all other guards get +1 permanently.
 
-            undos.push(heist.thief.setValue(heist.thief.getValue() - cost));
-        }
-        else
-        {
-            // ? If you approach a guard in the shadow, stealth points are consumed.
-            // ? But, if from his backside, you don't have to spend any stealth points. 
-            // ! Gives you treasure for taken stealth points.
+			if (this.isFacing(heist, last)) {
+				undos.push(...heist.getGuards(this._index).map(g => g.setModifier('intruder', 1)));
+			}
 
-            if(!this.isBackside(heist, last))
-            {
-                undos.push(heist.thief.setValue(heist.thief.getValue() - cost));
-            }
+			undos.push(heist.thief.setValue(heist.thief.getValue() - cost));
+		}
+		else
+		{
+			// ? If you approach a guard in the shadow, stealth points are consumed.
+			// ? But, if from his backside, you don't have to spend any stealth points. 
+			// ! Gives you treasure for taken stealth points.
 
-            undos.push(heist.thief.setScore(heist.thief.getScore() + cost));
-        }
+			if (!this.isBackside(heist, last))
+			{
+				undos.push(heist.thief.setValue(heist.thief.getValue() - cost));
+			}
 
-        return () => {
-            undos.forEach(undo => undo());
-        }
-    }
+			undos.push(heist.thief.setScore(heist.thief.getScore() + cost));
+		}
+		
+		// ? If a guard 's value is higher than your remaining stealth points, he will capture you.
+		if (heist.thief.getValue() < 1)
+		{
+			undos.push(heist.thief.setCaught());
+		}
+
+		return () => {
+			undos.forEach(undo => undo());
+		}
+	}
 }
 
 export default function Common(lookDir: number, value: number): Guard {
-    return new GuardImpl(lookDir, value);
+	return new GuardImpl(lookDir, value);
 }

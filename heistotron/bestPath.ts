@@ -49,15 +49,17 @@ export function deepClone<T>(obj: T, cache = new WeakMap()): T {
 function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Output {
     const generated = generateMoves(heist);
 
-    if (heist.path.isEnd() || !generated.length) {
+    if (heist.path.isEnd() || !generated.length) 
+    {
         return [evaluate(heist), heist.path.getState()];
     }
     
     let _score = Number.NEGATIVE_INFINITY, 
         _state: State;
 
-    for (let i = 0; i < generated.length; i++) {
-		if(base) console.log(`\nGenerating... ${i+1}/${generated.length}`);
+    for (let i = 0; i < generated.length; i++) 
+    {
+		//if(base) console.log(`\nGenerating... ${i+1}/${generated.length}`);
 
         const u: Undo | null  = heist.path.select(heist, generated[i]);
 
@@ -78,7 +80,9 @@ function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Outpu
 
 	if(depth > 0 && heist.path.getPath().length > 2)
     {
-		const [score, state] = Array(3).fill(null).map<Output>(() => {
+    	const path = [...heist.path.getPath()];
+    	
+		const sorted = Array(4).fill(null).map<Output>(() => {
 			// ? Clone the entire object
 			const clone = deepClone<Heist>(heist);
 
@@ -100,13 +104,21 @@ function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Outpu
 			sc *= .9 ** (depth - 1);
 
 			return [sc, st!];
-		}).sort((a: any, b: any) => b[0] - a[0])[0];
-
+		}).sort((a: any, b: any) => b[0] - a[0]);
+		
+		const best = sorted[0];
+		const worst = sorted.pop();
+		
+		const score = best[0];
+		
 		if(score > _score && score > 0)
 		{
-			state![0] = [...heist.path.getPath(), ...state![0]];
 			_score = score;
-			_state = state!;
+			_state = [
+				path,
+				// stealth? treasures?
+				[ best, worst ] // TODO add ts
+			]
 		}
     }
     
@@ -121,3 +133,4 @@ export default function bestPath(heist: Heist, depth: number = 1): Output {
 
     return [score, state];
 }
+[[]]

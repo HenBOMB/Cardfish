@@ -17,7 +17,7 @@ export class CardImpl implements tCard {
     }
 
     is(type: tCard | string): boolean {
-        return typeof type === 'string'? this.id === type : (this.id === type.id && this._index === type._index);
+        return typeof type === 'string'? this.id === type : (this.id === type?.id && this._index === type?._index);
     }
 
     isLit(heist: Heist): boolean {

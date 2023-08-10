@@ -77,7 +77,8 @@ function pathsIntersect (
       p1: Point[]
   ): boolean {
     
-    if(p0.length < 4 || p1.length < 2)
+    // TODO super dodgy
+    if(p0.length < 3 || p1.length < 2)
     {
         return false;
     }

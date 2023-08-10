@@ -37,13 +37,14 @@ export default function evaluate(heist: Heist, weights: number[][] = WEIGHTS): n
     const isEnd = last.is('exit');
     const stealth = heist.thief.getValue();
 
-    const x = isFull? 1 : 0;
+    const x = 1;//isFull? 1 : 0;
 
     const [ SxAa, SxAb, SxAc, SxAd ] = weights[x];
     
     let _score = 0;
 
     // ? Full path worth.
+    // ! Potential
     _score += isFull? SxAa : 0;
 
     // ? Exit card worth.
