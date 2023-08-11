@@ -1,5 +1,5 @@
-import { Torch, Guard, Pouch, Sneak, Door, Exit, Traitor, Chest, Cloak, Hide } from './game/cards/all';
-import bestPath from './heistotron/bestPath';
+import { MAP, Torch, Guard, Pouch, Sneak, Door, Exit, Traitor, Chest, Cloak, Hide } from './game/cards/all';
+import solve from './heistotron/solver';
 import evaluate from './heistotron/evaluator';
 import Debug from './debug';
 import { createHeist } from './game/heist';
@@ -19,73 +19,40 @@ function test(heist: Heist, path: number[]): void {
 	u.forEach(u => u());
 }
 
-async function read(path: string, cb: (data: object) => void): void
+function read(path: string, cb: (data: object) => void): void
 {
 	fetch(path).then(async (r) => cb(await r.json()))
 }
 
-async function load(id: number): Heist {
-	
+function load(i: number): Promise<Heist> {
+	const cb = ix => {
+		const args = ix.split(':');
+		const cb = MAP[args[0]];
+		const card = cb(...args.slice(1));
+		if (!card) console.log('Missing', ix);
+		return card;
+	}
+	return new Promise(res => {
+		read('./data/games.json', (data) => {
+			const { deck, plays, equip } = data[i];
+			res(createHeist(
+				plays[0][0],
+				equip.map(cb),
+				deck.map(cb)
+			));
+		});
+	});
 }
 
-const heist = createHeist(
-  6,
-	[
-		Cloak(5, 3)
-	],
-	[
-		Pouch(), Guard(2), Torch(),
-		Torch(), Traitor(), Guard(3),
-		Sneak(), Guard(0),
-
-		Guard(1), Torch(), Torch(),
-		Door(3), Guard(3),
-		Pouch(), Guard(0), Sneak(),
-
-		Torch(), Chest(), Sneak(2),
-		Guard(1), Torch(), Guard(3, 2),
-		Guard(0), Pouch(),
-
-		Pouch(), Pouch(), Guard(3),
-		Torch(), Sneak(2), Guard(3),
-		Guard(1, 2), Torch(),
-
-		Torch(), Hide(),
-		Door(0), Torch(), Guard(3),
-		Torch(), Torch(), Guard(0),
-
-		Torch(), Guard(2), Exit(0), // ? Unknown lock dir
-		Sneak(), Pouch(), Sneak(),
-		Torch(), Sneak(),
-		
-		Guard(1), Torch(), Torch(),
-		
-		Guard(1), Guard(2),
-		Guard(1), Torch(), Torch(),
-		Guard(3)
-	]
-);
-
-console.clear();
-
-console.log(heist._deck.map(c=>c.id).join("\", \""));
-
-return
-
-
-// Finished with score 80
-
-read('./data/games.json', (data) => {
+async: {
+	const heist = await load(0);
 	
-});
-
-return;
-
-var [ score, state ]: any = bestPath(heist, 1);
-
-console.log('score', score);
-console.log('state', ...state);
-
-return
-console.log('best', ...state[1][0]);
-console.log('wost', ...state[1][1]);
+	//console.log(heist._deck.map(c=>c.id).join("\", \""));
+	
+	var [score, state, pot]: any = solve(heist, 1);
+	
+	console.log('score', score);
+	console.log('path', state[0]);
+	console.log('value', state[1], 'score', state[2]);
+	console.log('state', pot);
+}
