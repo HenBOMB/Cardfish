@@ -37,14 +37,14 @@ export default function evaluate(heist: Heist, weights: number[][] = WEIGHTS): n
     const isEnd = last.is('exit');
     const stealth = heist.thief.getValue();
 
-    const x = 1;//isFull? 1 : 0;
+    const x = isFull? 1 : 0;
 
     const [ SxAa, SxAb, SxAc, SxAd ] = weights[x];
     
     let _score = 0;
 
     // ? Full path worth.
-    // ! Potential
+    // ! Potential?
     _score += isFull? SxAa : 0;
 
     // ? Exit card worth.
@@ -55,8 +55,6 @@ export default function evaluate(heist: Heist, weights: number[][] = WEIGHTS): n
 
     // ? Treasure worth.
     _score += heist.thief.getScore() * SxAd;
-
-    _score += heist.path.getPath().filter(i => heist.getCard(i).is('torch')).length * 1;
 
     // ? Dodgy
     //_score += (36 - heist.getDeck().length) * SxAf;
@@ -87,7 +85,7 @@ export function potential(heist: Heist, weights: number[] = P_WEIGHTS): number {
      * Bad when ending path in middle of heist.
      */
 
-
+	_score += heist.path.getPath().filter(i => heist.getCard(i).is('torch')).length * 0.5;
 
     return _score;
 }

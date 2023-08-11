@@ -1,7 +1,7 @@
 
 import readlineSync from 'readline-sync';
 import evaluate from './heistotron/evaluator';
-import { Output, deepClone } from './heistotron/bestPath';
+import { Output, deepClone } from './heistotron/solver';
 import { Heist } from './game/types';
 import createPath from './game/path';
 // import readline from 'readline';

@@ -1,6 +1,9 @@
 import { Heist, Card as tCard, Guard, Undo } from '../types';
 
 export class CardImpl implements tCard {
+	
+	//static MAP: { [key: string]: tCard } = {};
+	
     id: string;
     _index: number;
 

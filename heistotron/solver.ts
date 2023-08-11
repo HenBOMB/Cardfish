@@ -1,12 +1,14 @@
 import createPath from "../game/path";
 import { Heist, Undo } from "../game/types";
-import evaluate from "./evaluator";
+import evaluate, { potential } from "./evaluator";
 import generateMoves from "./generator";
 
 export var count = 0;
+export var potential: any;
 
+type Pot = [State, State];
 type State = [number[], number, number];
-export type Output = [number, State];
+export type Output = [number, State, Pot];
 
 export function deepClone<T>(obj: T, cache = new WeakMap()): T {
     // Handle non-object types and primitives
@@ -46,28 +48,27 @@ export function deepClone<T>(obj: T, cache = new WeakMap()): T {
     return cloneObject;
 }
 
-function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Output {
+function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heist) => number): Output {
     const generated = generateMoves(heist);
 
     if (heist.path.isEnd() || !generated.length) 
     {
-        return [evaluate(heist), heist.path.getState()];
+        return [evaluate(heist), heist.path.getState(), []];
     }
     
     let _score = Number.NEGATIVE_INFINITY, 
-        _state: State;
+        _state: State,
+        _pot: Pot[];
 
     for (let i = 0; i < generated.length; i++) 
     {
-		//if(base) console.log(`\nGenerating... ${i+1}/${generated.length}`);
-
         const u: Undo | null  = heist.path.select(heist, generated[i]);
 
         if(!u) continue;
 
         count++;
 
-        const [score, state] = dfsWithBacktracking(heist, depth);
+        const [score, state] = dfsWithBacktracking(heist, depth, evaluate);
         
         u();
 
@@ -80,7 +81,7 @@ function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Outpu
 
 	if(depth > 0 && heist.path.getPath().length > 2)
     {
-    	const path = [...heist.path.getPath()];
+    	const pot = potential(heist);
     	
 		const sorted = Array(4).fill(null).map<Output>(() => {
 			// ? Clone the entire object
@@ -95,7 +96,7 @@ function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Outpu
 			clone.play(clone.path.getPath());
 
 			// ! Potential score
-			let [sc, st] = dfsWithBacktracking(clone, depth - 1);
+			let [sc, st] = dfsWithBacktracking(clone, depth - 1, potential);
 
 			// ! Risk formula?
 			// Depth closer to 0, the riskier the path
@@ -108,29 +109,23 @@ function dfsWithBacktracking(heist: Heist, depth: number, base?: boolean): Outpu
 		
 		const best = sorted[0];
 		const worst = sorted.pop();
-		
 		const score = best[0];
 		
-		if(score > _score && score > 0)
+		if(score > pot && score > 0)
 		{
-			_score = score;
-			_state = [
-				path,
-				// stealth? treasures?
-				[ best, worst ] // TODO add ts
-			]
+			_pot = [ best, worst ];
 		}
     }
     
-    return [_score, _state!];
+    return [_score, _state!, _pot];
 }
 
-export default function bestPath(heist: Heist, depth: number = 1): Output {
+export default function solve(heist: Heist, depth: number = 1): Output {
     count = 0;
     heist.path = createPath(heist);
 
-    const [ score, state ] = dfsWithBacktracking(heist, depth, true);
+    const [ score, state, pot ] = dfsWithBacktracking(heist, depth, evaluate);
 
-    return [score, state];
+    return [score, state, pot];
 }
 [[]]

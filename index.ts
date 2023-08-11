@@ -1,5 +1,5 @@
 import { Torch, Guard, Pouch, Sneak, Door, Exit, Traitor, Chest, Cloak, Hide } from './game/cards/all';
-import bestPath from './heistotron/bestPath';
+import solve from './heistotron/solver';
 import Debug from './debug';
 import { createHeist } from './game/heist';
 
@@ -63,7 +63,7 @@ Score: 21.25 (0)
 */
 
 console.log('Waiting...');
-// var state: any = bestPath(heist, 2);
+// var state: any = solve(heist, 2);
 // const state = [
 //   [
 //     7, 6, 3, 0, 0, 3, 6,
@@ -81,7 +81,7 @@ heist.setDeck([
 
 heist.play([7, 6, 3, 0]);
 
-var state: any = bestPath(heist, 0);
+var state: any = solve(heist, 0);
 //console.log(state);
 
 Debug(heist, state as any);
