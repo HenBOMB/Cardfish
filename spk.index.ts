@@ -47,10 +47,11 @@ function load(i: number): Promise<Heist> {
 async: {
 	const heist = await load(0);
 	
-	var [score, state, pot]: any = solve(heist, 1);
+	// depth > 0 does not work with cards in deck
+	var [score, state, pot]: any = solve(heist, 0);
 	
 	console.log('score', score);
 	console.log('path', state[0]);
 	console.log('value', state[1], 'score', state[2]);
-	console.log('pot', pot);
+	// console.log('pot', pot);
 }
