@@ -1,16 +1,13 @@
 import { CardImpl } from '../card';
 import { Heist, Card, Undo } from '../../types';
+import { Obstacle } from '../types';
 
-export default class Torch extends CardImpl implements Card {
+export default class Torch extends Obstacle {
 
     private _lit: boolean = true;
 
     constructor() {
         super('torch');
-    }
-
-    is(type: string): boolean {
-        return super.is(type) || type === 'obstacle';
     }
 
     isLit(heist: Heist): boolean {

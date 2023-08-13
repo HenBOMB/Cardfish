@@ -33,18 +33,29 @@ export class Equipment implements EquipmentInt {
     }
 }
 
-export class Lockable extends CardImpl {
+export class Obstacle extends CardImpl {
+
+    constructor(id: string, lockDir: number) {
+        super(id);
+    }
+
+    is(type: string): boolean {
+        return super.is(type) || type === 'obstacle';
+    }
+}
+
+export class Lockable extends Obstacle {
     private lockDir: number;
 
     constructor(id: string, lockDir: number) {
         super(id);
         this.lockDir  = lockDir;
     }
-
-    is(type: string): boolean {
-        return super.is(type) || type === 'obstacle';
-    }
-
+    
+	is(type: string): boolean {
+		return super.is(type) || type === 'lockable';
+	}
+	
     // ? If illuminated only passable from the lock direction.
     // ? If visible impassible
 

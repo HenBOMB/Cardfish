@@ -1,8 +1,6 @@
-import { Heist, Card as tCard, Guard, Undo } from '../types';
+import { Heist, Card, Guard, Undo } from '../types';
 
-export class CardImpl implements tCard {
-	
-	//static MAP: { [key: string]: tCard } = {};
+export class CardImpl implements Card {
 	
     id: string;
     _index: number;
@@ -97,8 +95,4 @@ export class CardImpl implements tCard {
     getModifier(key: string): number {
         return this._modifiers[key] || 0;
     }
-}
-
-export default function Card(id: string, value: number): tCard {
-    return new CardImpl(id, value);
 }

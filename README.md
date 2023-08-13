@@ -1,2 +1,2 @@
 # Cardfish
-AI engine made to crush the -Card Thief- mobile game.
+AI bot made to crush the -Card Thief- mobile game.

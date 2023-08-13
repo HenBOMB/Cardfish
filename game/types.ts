@@ -92,7 +92,7 @@ export interface Card {
     setModifier(key: string, value: number): Undo;
 }
 
-// TODO Move to ./cards/types.ts
+// TODO Move all vvv to ./cards/types.ts
 
 export interface Thief extends Card {
     isCaught(): boolean;
@@ -108,24 +108,4 @@ export interface Guard extends Card {
     isBackside(heist: Heist, card: Card): boolean;
     isFacing(heist: Heist, card: Card): boolean;
     setLook(card: Card): Undo;
-}
-
-export interface Obstacle extends Card {
-
-}
-
-export interface Torch extends Card {
-
-}
-
-export interface Stealth extends Card {
-
-}
-
-export interface Treasure extends Card {
-
-}
-
-export interface Trap extends Card {
-
 }
