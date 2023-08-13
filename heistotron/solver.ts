@@ -48,7 +48,7 @@ export function deepClone<T>(obj: T, cache = new WeakMap()): T {
     return cloneObject;
 }
 
-function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heist) => number): Output {
+function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heist) => number,): Output {
     const generated = generateMoves(heist);
 
     if (heist.path.isEnd() || !generated.length) 
@@ -81,7 +81,7 @@ function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heis
 
 	if(depth > 0 && heist.path.getPath().length > 2)
     {
-    	const pot = potential(heist);
+    	//const pot = evaluate(heist);
     	
 		const sorted = Array(4).fill(null).map<Output>(() => {
 			// ? Clone the entire object
@@ -96,7 +96,7 @@ function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heis
 			clone.play(clone.path.getPath());
 
 			// ! Potential score
-			let [sc, st] = dfsWithBacktracking(clone, depth - 1, potential);
+			let [sc, st] = dfsWithBacktracking(clone, depth - 1, evaluate);
 
 			// ! Risk formula?
 			// Depth closer to 0, the riskier the path
@@ -111,7 +111,7 @@ function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heis
 		const worst = sorted.pop();
 		const score = best[0];
 		
-		if(score > pot && score > 0)
+		if(score > _score && score > 0)
 		{
 			_pot = [ best, worst ];
 		}

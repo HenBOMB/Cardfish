@@ -1,3 +1,4 @@
+// ! WARNING: OUTDATED
 import { Torch, Guard, Pouch, Sneak, Door, Exit, Traitor, Chest, Cloak, Hide } from './game/cards/all';
 import solve from './heistotron/solver';
 import Debug from './debug';
