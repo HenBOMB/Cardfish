@@ -1,4 +1,5 @@
-import { Path, Heist, Undo, Card, Guard } from './types';
+import { Path, Heist, Undo, Card } from './types';
+import { Guard } from './cards/types';
 
 const MASK = [
     [2, 5, 6, 7, 8],

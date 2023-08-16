@@ -1,7 +1,8 @@
-import { CardImpl } from './card';
-import { Undo, Thief } from '../types';
+import { CardImpl } from '../card';
+import { Undo } from '../../types';
+import { Thief } from '../types';
 
-export class ThiefImpl extends CardImpl implements Thief {
+export default class ThiefImpl extends CardImpl implements Thief {
     private _score: number;
     private _status: number;
 
@@ -48,8 +49,4 @@ export class ThiefImpl extends CardImpl implements Thief {
             thief._status = 0;
         }
     }
-}
-
-export function createThief(index: number): Thief {
-    return new ThiefImpl(index);
 }

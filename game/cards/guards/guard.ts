@@ -1,5 +1,6 @@
-import { Heist, Card, Guard, Undo } from '../../types';
+import { Heist, Card, Undo } from '../../types';
 import { CardImpl } from '../card';
+import { Guard } from '../types';
 
 const KDI: {
 	[key: string]: number } = {
@@ -23,6 +24,10 @@ class GuardImpl extends CardImpl implements Guard {
 
 	is(type: string): boolean {
 		return super.is(type);
+	}
+	
+	isIdle(): boolean {
+		return !this.getModifier('sus') && !this.getModifier('alert');
 	}
 
 	isNocturnal(): boolean {

@@ -1,4 +1,5 @@
-import { Heist, Card, Guard, Undo } from '../types';
+import { Heist, Card, Undo } from '../types';
+import { Guard } from './cards/types';
 
 export class CardImpl implements Card {
 	
@@ -26,7 +27,7 @@ export class CardImpl implements Card {
             .some(c => c.is('torch') && c.isLit(heist));
     }
 
-     isWatched(heist: Heist): boolean {
+    isWatched(heist: Heist): boolean {
         return heist.getPerp(this)
             // ? Filter out all cards that are not guards.
             .filter(c => c.is('guard')).map(c => c as Guard)
@@ -74,6 +75,7 @@ export class CardImpl implements Card {
             const nonfacing = guards.filter(g => !g.isFacing(heist, card));
             if(nonfacing.length > 0) {
                 undos.push(...nonfacing.map(g => g.setLook(card)));
+                undos.push(...nonfacing.map(g => g.setModifier('sus', 1)));
             }
         }
 

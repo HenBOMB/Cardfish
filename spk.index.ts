@@ -2,7 +2,7 @@ import { MAP, Torch, Guard, Pouch, Sneak, Door, Exit, Traitor, Chest, Cloak, Hid
 import solve from './heistotron/solver';
 import evaluate from './heistotron/evaluator';
 import Debug from './debug';
-import { createHeist } from './game/heist';
+import createHeist from './game/heist';
 import createPath from './game/path';
 
 function display(c)
@@ -47,11 +47,19 @@ function load(i: number): Promise<Heist> {
 async: {
 	const heist = await load(0);
 	
-	// depth > 0 does not work with cards in deck
-	var [score, state, pot]: any = solve(heist, 0);
+	var [score, state, pot]: any = solve(heist, 1, 1);
+	console.log(state);
+	console.log('score', score);
+	console.log('path', state[0]);
+	console.log('stealth', state[1], 'treasures', state[2]);
+
+	if(!pot) return;
+	[score, state, pot] = pot[0];
+	
+	console.log('best');
 	
 	console.log('score', score);
 	console.log('path', state[0]);
-	console.log('value', state[1], 'score', state[2]);
-	// console.log('pot', pot);
+	console.log('stealth', state[1], 'treasures', state[2]);
+	
 }

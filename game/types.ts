@@ -94,18 +94,3 @@ export interface Card {
 
 // TODO Move all vvv to ./cards/types.ts
 
-export interface Thief extends Card {
-    isCaught(): boolean;
-    isEscaped(): boolean;
-    setCaught(): Undo;
-    setEscape(): Undo;
-    getScore(): number;
-    setScore(treasures: number): Undo;
-}
-
-export interface Guard extends Card {
-    isNocturnal(): boolean;
-    isBackside(heist: Heist, card: Card): boolean;
-    isFacing(heist: Heist, card: Card): boolean;
-    setLook(card: Card): Undo;
-}

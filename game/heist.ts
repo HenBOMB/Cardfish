@@ -1,11 +1,10 @@
-import { Heist, Card, Path, Thief, Undo, Guard as tGuard } from './types';
-import { Torch, Empty, Guard } from './cards/all';
+import { Heist, Card, Path, Undo } from './types';
+import { Torch, Empty, Guard, Thief } from './cards/all';
 import createPath from './path';
-import { Equipment } from './cards/types';
-import { createThief } from './cards/thief';
+import { Equipment, Guard as iGuard, Thief as iThief } from './cards/types';
 
 export class HeistImpl implements Heist {
-    thief: Thief;
+    thief: iThief;
     path: Path;
     
     private _cards: Card[];
@@ -13,8 +12,7 @@ export class HeistImpl implements Heist {
     private _equipment: Equipment[];
 
     constructor(index: number, equipment: Equipment[], deck: Card[]) {
-
-        this.thief = createThief(index);
+        this.thief = Thief(index);
         this._equipment = equipment;
         this._cards = Array<Card>(9).fill(Empty());
         this._deck = [...deck];
@@ -91,10 +89,10 @@ export class HeistImpl implements Heist {
         return MAP[card._index].map(i => this.getCard(i)).filter(c => c.isSelectable(this));
     }
 
-    getGuards(exclude: number = -1): tGuard[] {
+    getGuards(exclude: number = -1): iGuard[] {
         return this.getCards()
             .filter((c: Card) => c.is('guard') && c._index !== exclude)
-            .map((c: Card) => c as tGuard);
+            .map((c: Card) => c as iGuard);
     }
 
     play(path: number[], other?: number[]): void {
@@ -142,7 +140,18 @@ export class HeistImpl implements Heist {
             for (let i = 5; i > 0; i--)
             {
                 const c = this._cards[i];
-                if(c.is('empty') || c.is('thief') || c.is('guard')) continue;
+                if(c.is('empty') || c.is('thief') ||  c.is('guard')) continue;
+                if(c.is('guard'))
+                {
+                	if(!((c as Guard).isIdle()) && !b)
+                	{
+                		const f = (c as Guard).getFacing(this);
+                		if (!f || !f.is('empty')) continue;
+                		this._cards[i] = f;
+                		this._cards[f._index] = c;
+                		continue;
+                	}
+                }
                 const g = this._cards[i+3];
                 if(!g.is('empty')) continue;
                 this._cards[i] = g;
@@ -155,34 +164,19 @@ export class HeistImpl implements Heist {
         }
         
         drop();
-        
-        // ! Move guards in their direction if possible.
-
-		for (let i = 0; i < 9; i++)
-		{
-			const c = this._cards[i];
-		
-			if (c.is('guard'))
-			{
-				const f = (c as Guard).getFacing(this);
-				if (!f || !f.is('empty')) continue;
-				this._cards[i] = f;
-				this._cards[f._index] = c;
-			}
-		}
 		
         // ! Deal the cards
-        
-        this._cards = this._cards.map((c, i) => {
+       
+        this._cards = this._cards.reverse().map((c, i) => {
             c._index = i;
             if(!c.is('empty')) return c; 
             const card = this._deck.shift() || this.getCard(-1);
             card._index = i;
             return card;
-        });
+        }).reverse();
     }
 }
 
-export function createHeist(index: number, equipment: Equipment[], deck: Card[]): Heist {
+export default function createHeist(index: number, equipment: Equipment[], deck: Card[]): Heist {
     return new HeistImpl(index, equipment, deck);
 }

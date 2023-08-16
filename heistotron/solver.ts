@@ -8,7 +8,7 @@ export var potential: any;
 
 type Pot = [State, State];
 type State = [number[], number, number];
-export type Output = [number, State, Pot];
+export type Output = [number, State, Pot[][]];
 
 export function deepClone<T>(obj: T, cache = new WeakMap()): T {
     // Handle non-object types and primitives
@@ -48,7 +48,7 @@ export function deepClone<T>(obj: T, cache = new WeakMap()): T {
     return cloneObject;
 }
 
-function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heist) => number,): Output {
+function dfsWithBacktracking(heist: Heist, depth: number, chance: number): Output {
     const generated = generateMoves(heist);
 
     if (heist.path.isEnd() || !generated.length) 
@@ -58,17 +58,17 @@ function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heis
     
     let _score = Number.NEGATIVE_INFINITY, 
         _state: State,
-        _pot: Pot[];
+        _pot: Pot[] = [];
 
     for (let i = 0; i < generated.length; i++) 
     {
-        const u: Undo | null  = heist.path.select(heist, generated[i]);
+        const u: Undo | null  = heist.path.select(heist, generated[i]);	
 
         if(!u) continue;
 
         count++;
 
-        const [score, state] = dfsWithBacktracking(heist, depth, evaluate);
+        const [score, state, pot] = dfsWithBacktracking(heist, depth, chance);
         
         u();
 
@@ -76,56 +76,59 @@ function dfsWithBacktracking(heist: Heist, depth: number, evaluate: (heist: Heis
         {
             _score = score;
             _state = state!;
+            _pot = [...pot];
         }
     }
 
-	if(depth > 0 && heist.path.getPath().length > 2)
+	if(depth > 0 && _score > 0 && heist.path.getPath().length > 2)
     {
-    	//const pot = evaluate(heist);
-    	
-		const sorted = Array(4).fill(null).map<Output>(() => {
+    	// ! AI can predict cards 100% (if any)
+    	const deck = heist.getDeck();
+    	const path = heist.path.getPath();
+    	const knows = deck.length >= path.length
+		
+		const pots = Array(chance).fill(null).map<Output>(() => {
 			// ? Clone the entire object
 			const clone = deepClone<Heist>(heist);
-
-			// ? We must deal rng cards, not cards in the current deck
-      		clone.setDeck(clone.genCards(clone.path.getPath().length));
-
-			const copy = deepClone<Heist>(heist);
+			
+			// TODO or load from memory? 
+			// here is were a nn comes into play
+			!knows && clone.setDeck([...deck, ...clone.genCards(path.length)]);
 
 			// ? Play the path on the clone
-			clone.play(clone.path.getPath());
+			clone.play(path);
 
 			// ! Potential score
-			let [sc, st] = dfsWithBacktracking(clone, depth - 1, evaluate);
+			const out = dfsWithBacktracking(clone, depth - 1, evaluate);
 
 			// ! Risk formula?
 			// Depth closer to 0, the riskier the path
 			// ? This makes deeper paths less risky and more rewarding?
 
-			sc *= .9 ** (depth - 1);
+			out[0] *= .8 ** (depth - 1);
 
-			return [sc, st!];
+			return out;
 		}).sort((a: any, b: any) => b[0] - a[0]);
 		
-		const best = sorted[0];
-		const worst = sorted.pop();
-		const score = best[0];
+		const best = pots.shift();
+		//const worst = pots.pop() || null;
+		const [ score, state, pot ] = best;
 		
 		if(score > _score && score > 0)
 		{
-			_pot = [ best, worst ];
+			_score = score;
+			_pot = [ best, ...pot ];
 		}
     }
     
     return [_score, _state!, _pot];
 }
 
-export default function solve(heist: Heist, depth: number = 1): Output {
+export default function solve(heist: Heist, depth?: number = 1, chance?: number = 2): Output {
     count = 0;
     heist.path = createPath(heist);
-
-    const [ score, state, pot ] = dfsWithBacktracking(heist, depth, evaluate);
+	
+    const [ score, state, pot ] = dfsWithBacktracking(heist, depth, chance || 1);
 
     return [score, state, pot];
 }
-[[]]

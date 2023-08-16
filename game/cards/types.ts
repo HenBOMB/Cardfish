@@ -1,10 +1,33 @@
 import { Heist, Card, Undo } from "../types";
 import { CardImpl } from "./card";
 
+export interface Guard extends Card {
+	isIdle(): boolean;
+    isNocturnal(): boolean;
+    isBackside(heist: Heist, card: Card): boolean;
+    isFacing(heist: Heist, card: Card): boolean;
+    setLook(card: Card): Undo;
+}
+
+export interface Thief extends Card {
+    isCaught(): boolean;
+    isEscaped(): boolean;
+    setCaught(): Undo;
+    setEscape(): Undo;
+    getScore(): number;
+    setScore(treasures: number): Undo;
+}
+
 export interface EquipmentInt {
     is(type: string): boolean;
     getValue(): number;
     use(heist: Heist, card: Card | number): Undo | null;
+}
+
+export class Empty extends CardImpl implements Card {
+    constructor() {
+        super('empty');
+    }
 }
 
 export class Equipment implements EquipmentInt {

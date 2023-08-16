@@ -1,4 +1,5 @@
-import empty from './empty';
+import thief from './misc/thief';
+import empty from './misc/empty';
 import guard from './guards/guard';
 import door from './obstacles/door';
 import exit from './misc/exit';
@@ -9,6 +10,8 @@ import hide from './sneak/hide';
 import pouch from './treasure/pouch';
 import chest from './treasure/chest';
 import cloak from './equipment/cloak';
+
+export function Thief(index: number) { return new thief(index) };
 
 export function Door(lockDir: 0 | 1 | 2 | 3) { return new door(lockDir) };
 export function Exit(lockDir: 0 | 1 | 2 | 3) { return new exit(lockDir) };
@@ -25,6 +28,7 @@ export function Chest() { return new chest() };
 export function Cloak(value: number, level?: number) { return new cloak(value, level || 0) };
 
 export const MAP = {
+	'thief': (..._) => Thief(_[0]),
 	'door': (..._) => Door(_[0]),
 	'exit': (..._) => Exit(_[0]),
 	'guard': (..._) => Guard(_[0], _[1]),
