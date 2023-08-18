@@ -3,29 +3,40 @@ import { CardImpl } from '../card';
 import { Guard } from '../types';
 
 const KDI: {
-	[key: string]: number } = {
+	[key: string]: number
+} = {
 	'-3': 0,
 	'1': 1,
 	'3': 2,
 	'-1': 3
 };
 
+const MAP = [
+    [1, 2],
+	[1, 2, 3],
+	[2, 3],
+	[0, 1, 2],
+	[0, 1, 2, 3],
+	[0, 2, 3],
+	[0, 1],
+	[0, 1, 3],
+	[0, 3],
+];
+
 class GuardImpl extends CardImpl implements Guard {
 
-	// ? 0, 1, 2, 3
+	// ? 0 ^, 1 >, 2 v, 3 <
 	private lookDir: number;
-	private value: number;
 
-	constructor(lookDir: number, value: number) {
+	constructor(lookDir: number) {
 		super('guard');
-		this.lookDir = lookDir;
-		this.value = value;
+		this.lookDir = lookDir || -1;
 	}
 
 	is(type: string): boolean {
 		return super.is(type);
 	}
-	
+
 	isIdle(): boolean {
 		return !this.getModifier('sus') && !this.getModifier('alert');
 	}
@@ -44,14 +55,13 @@ class GuardImpl extends CardImpl implements Guard {
 	}
 
 	getValue(heist: Heist): number {
-		const value = (
-			this.value +
+		return (
+			super.getValue() +
 			(this.isLit(heist) ? 1 : 0) +
 			(this.isWatched(heist) ? 1 : 0) +
 			this.getModifier('alert') +
 			this.getModifier('intruder')
 		) * heist.path.getDiff();
-		return value;
 	}
 
 	getFacing(heist: Heist): Card | null {
@@ -69,18 +79,22 @@ class GuardImpl extends CardImpl implements Guard {
 			guard.lookDir = old;
 		}
 	}
+	
+	place(heist: Heist, index: number): void {
+		super.place(heist, index);
+		this.lookDir = this.lookDir < 0? MAP[index].sort((a,b)=>Math.random()-Math.random())[0] : this.lookDir;
+	}
 
 	select(heist: Heist): Undo {
 		const cost = this.getValue(heist);
 		const undos = [super.select(heist)];
 		const last = heist.getCard(heist.path.getPath()[heist.path.getPath().length - 2] !);
-		
+
 		if (this.isLit(heist))
 		{
 			// ? If you approach a guard from his front, all other guards get +1 permanently.
-
 			if (this.isFacing(heist, last)) {
-				undos.push(...heist.getGuards(this._index).map(g => g.setModifier('intruder', 1)));
+				undos.push(...heist.getGuards(this._index).map(g => g.setModifier('intruder', g.getModifier('intruder') + 1)));
 			}
 
 			undos.push(heist.thief.setValue(heist.thief.getValue() - cost));
@@ -98,7 +112,7 @@ class GuardImpl extends CardImpl implements Guard {
 
 			undos.push(heist.thief.setScore(heist.thief.getScore() + cost));
 		}
-		
+
 		// ? If a guard 's value is higher than your remaining stealth points, he will capture you.
 		if (heist.thief.getValue() < 1)
 		{

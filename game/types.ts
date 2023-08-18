@@ -85,12 +85,10 @@ export interface Card {
     isLit(heist: Heist): boolean;
     isWatched(heist: Heist): boolean;
     isSelectable(heist: Heist): boolean;
-    select(heist: Heist): Undo;
 	getValue(heist: Heist): number;
 	setValue(value: number): Undo;
     getModifier(key: string): number;
     setModifier(key: string, value: number): Undo;
+    place(heist: Heist, index: number): void;
+    select(heist: Heist): Undo;
 }
-
-// TODO Move all vvv to ./cards/types.ts
-

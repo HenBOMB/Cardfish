@@ -16,7 +16,7 @@ export function Thief(index: number) { return new thief(index) };
 export function Door(lockDir: 0 | 1 | 2 | 3) { return new door(lockDir) };
 export function Exit(lockDir: 0 | 1 | 2 | 3) { return new exit(lockDir) };
 
-export function Guard(lookDir: 0 | 1 | 2 | 3, value: number = 1) { return guard(lookDir, value) };
+export function Guard(lookDir: 0 | 1 | 2 | 3) { return guard(lookDir) };
 export function Sneak(value: number = 1) { return new sneak(value) };
 export function Traitor() { return new traitor() };
 export function Hide() { return new hide() };
@@ -31,7 +31,7 @@ export const MAP = {
 	'thief': (..._) => Thief(_[0]),
 	'door': (..._) => Door(_[0]),
 	'exit': (..._) => Exit(_[0]),
-	'guard': (..._) => Guard(_[0], _[1]),
+	'guard': (..._) => Guard(_[0]),
 	'sneak': (..._) => Sneak(_[0]),
 	'traitor': () => Traitor(), // ..._?:any[]
 	'hide': () => Hide(),

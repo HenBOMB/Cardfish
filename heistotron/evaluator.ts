@@ -3,7 +3,7 @@ import { Heist, Path } from "../game/types";
 const WEIGHTS: number[][] = [
     [
         // ? Full path worth.
-        100,
+        2, // ? 100?
         // ? Exit card worth.
         200,
         // ? Stealth worth.
@@ -37,12 +37,11 @@ export default function evaluate(heist: Heist, weights: number[][] = WEIGHTS): n
     const isEnd = last.is('exit');
     const stealth = heist.thief.getValue();
 
-    const x = isFull? 1 : 0;
-
-    const [ SxAa, SxAb, SxAc, SxAd ] = weights[x];
+    const [ SxAa, SxAb, SxAc, SxAd ] = weights[isFull? 1 : 0];
     
     let _score = 0;
 
+	// !! TODO This shouldn't be here
     // ? Full path worth.
     // ! Potential?
     _score += isFull? SxAa : 0;
@@ -56,9 +55,6 @@ export default function evaluate(heist: Heist, weights: number[][] = WEIGHTS): n
     // ? Treasure worth.
     _score += heist.thief.getScore() * SxAd;
 
-    // ? Dodgy
-    //_score += (36 - heist.getDeck().length) * SxAf;
-
     // ? This leads to higher path difficulty. More costly?
     
     // ? Start - end penalty worth.
@@ -68,11 +64,12 @@ export default function evaluate(heist: Heist, weights: number[][] = WEIGHTS): n
 
     // ! More diff (+1) paths, more costly but more score?.
 
-    // TODO ? penalize for ending on bad square
+    // !! TODO ? penalize for ending on bad square
 
     return _score;
 }
 
+// !! hm..
 export function potential(heist: Heist, weights: number[] = P_WEIGHTS): number {
     let _score = evaluate(heist, WEIGHTS);
 

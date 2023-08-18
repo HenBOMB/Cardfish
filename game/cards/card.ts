@@ -54,6 +54,10 @@ export class CardImpl implements Card {
         return this._value;
     }
 
+	place(heist: Heist, index: number): void {
+		heist.setCard(index, this);
+	}
+	
     select(heist: Heist): Undo {
         const card = this;
         const undos: Undo[] = [];
@@ -68,7 +72,7 @@ export class CardImpl implements Card {
             // ? If you select a card that was watched by a guard, the guard is alerted (!) and gets +1 permanently.
             const facing = guards.filter(g => g.isFacing(heist, card));
             if(facing.length > 0) {
-                undos.push(...facing.map(g => g.setModifier('alert', 1)));
+                undos.push(...facing.map(g => g.setModifier('alert', g.getModifier('')+1)));
             }
 
             // ? Selecting an illuminated adjacent card makes a guard suspicious (?) and turns him into that card's direction.

@@ -32,10 +32,11 @@ export class HeistImpl implements Heist {
         return card;
     }
 
-    setCard(i: number, card: Card = Empty()): Undo {
+    setCard(i: number, card?: Card): Undo {
         const heist = this;
         const c = heist._cards[i];
-        heist._cards[i] = card;
+        heist._cards[i] = card || Empty();
+        heist._cards[i]._index = i;
         return () => {
             heist._cards[i] = c;
         }
@@ -54,8 +55,7 @@ export class HeistImpl implements Heist {
     }
 
     getEquipment(i: number): Equipment {
-        i = i < 0? i + 3 : i;
-        return this._equipment[i];
+        return this._equipment[i < 0? i + 3 : i];
     }
 
     getAdj(card: Card): Card[] {
@@ -136,6 +136,21 @@ export class HeistImpl implements Heist {
     }
 
     deal(): void {
+    	for (let i = 0; i < 9; i++)
+    	{
+    		const c = this._cards[i];
+    		if (c.is('guard'))
+    		{
+    			if (!((c as Guard).isIdle()))
+    			{
+    				const f = (c as Guard).getFacing(this);
+    				if (!f || !f.is('empty')) continue;
+    				this._cards[i] = f;
+    				this._cards[f._index] = c;
+    			}
+    		}
+    	}
+    	
         const drop = (b?: boolean) => {
             for (let i = 5; i > 0; i--)
             {
@@ -143,12 +158,8 @@ export class HeistImpl implements Heist {
                 if(c.is('empty') || c.is('thief') ||  c.is('guard')) continue;
                 if(c.is('guard'))
                 {
-                	if(!((c as Guard).isIdle()) && !b)
+                	if(!((c as Guard).isIdle()))
                 	{
-                		const f = (c as Guard).getFacing(this);
-                		if (!f || !f.is('empty')) continue;
-                		this._cards[i] = f;
-                		this._cards[f._index] = c;
                 		continue;
                 	}
                 }
@@ -167,13 +178,11 @@ export class HeistImpl implements Heist {
 		
         // ! Deal the cards
        
-        this._cards = this._cards.reverse().map((c, i) => {
+        this._cards.reverse().map((c, i) => {
             c._index = i;
             if(!c.is('empty')) return c; 
-            const card = this._deck.shift() || this.getCard(-1);
-            card._index = i;
-            return card;
-        }).reverse();
+            (this._deck.shift() || this.getCard(-1)).place(this, i);
+        })
     }
 }
 

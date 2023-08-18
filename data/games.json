@@ -1,18 +1,7 @@
 [
 	{
-		"deck": ["pouch", "guard:2", "torch", "torch", "traitor", "guard:3", "sneak", "guard:0", "torch", "torch", "door:3", "guard:3", "pouch", "guard:0", "sneak", "torch", "chest", "sneak:2", "guard:1", "torch", "guard:3:2", "guard:0", "pouch", "pouch", "pouch", "guard:3", "torch", "sneak:2", "guard:3", "guard:1:2", "torch", "torch", "hide", "door:0", "torch", "guard:3", "torch", "torch", "guard:2", "torch", "guard:2", "exit:1", "sneak", "pouch", "sneak", "torch", "sneak", "guard:1", "torch", "torch", "guard:1", "guard:2", "guard:1", "torch", "torch", "guard:3"],
-		"plays": [
-			[6, 7, 8, 5, 4, 2, 1, 0, 3],
-			[3, 0, 1, 2, 4, 5, 8, 7, 6],
-			[-3, -1],
-			[6, 3, 7, 4, 0, 1, 2, 5, 8],
-			[8, 5, 7, 6, 3, 0, 1, 4, 2],
-			[2, 1, 5, 8, 4, 0, 3, 6, 7],
-			[7, 6, 3, 0],
-			[0, 3, 6, 7, 4, 8, 5],
-			[5, 7, 6, 3, 1, 4, 2]
-		],
+		"deck": ["pouch", "guard", "torch", "torch", "traitor", "guard", "sneak", "guard", "torch", "torch", "door:3", "guard", "pouch", "guard", "sneak", "torch", "chest", "sneak:2", "guard", "torch", "guard", "guard", "pouch", "pouch", "pouch", "guard", "torch", "sneak:2", "guard", "guard", "torch", "torch", "hide", "door:0", "torch", "guard", "torch", "torch", "guard", "torch", "guard", "exit:1", "sneak", "pouch", "sneak", "torch", "sneak", "guard", "torch", "torch", "guard", "guard", "guard", "torch", "torch", "guard"],
 		"equip": ["cloak:5:3"],
-		"results": [0, 80]
+		"start": 5
 	}
 ]
